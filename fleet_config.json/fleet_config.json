@@ -1,0 +1,52 @@
+{
+  "fleets": [
+    {
+      "id": "aw109sp",
+      "name": "AW109SP",
+      "type": "phase",
+      "dataFile": "data/aw109sp/dashboard.json",
+      "inspections": [
+        { "label": "50 Hr",   "ataMatch": "05 1000",     "mode": "contains" },
+        { "label": "100 Hr",  "ataMatch": "64 01[273]",  "mode": "contains" },
+        { "label": "200 Hr",  "ataMatch": "05 1005",     "mode": "contains" },
+        { "label": "400 Hr",  "ataMatch": "05 1010",     "mode": "contains" },
+        { "label": "800 Hr",  "ataMatch": "05 1015",     "mode": "contains" },
+        { "label": "2400 Hr", "ataMatch": "62 11[373]",  "mode": "contains" },
+        { "label": "3200 Hr", "ataMatch": "05 1020",     "mode": "contains" }
+      ],
+      "thresholds": {
+        "criticalDays": 7,
+        "comingDays": 30,
+        "criticalHrs": 25,
+        "comingHrs": 100,
+        "componentWindow": 200
+      }
+    },
+    {
+      "id": "bell407",
+      "name": "Bell 407",
+      "type": "all",
+      "dataFile": "data/bell407/dashboard.json",
+      "inspections": [
+        { "label": "12 Month",           "ataMatch": "12MO-INSPECTION",           "mode": "contains" },
+        { "label": "24 Month",           "ataMatch": "24MO-INSPECTION",           "mode": "contains" },
+        { "label": "300HR/12M Airframe", "ataMatch": "300HR-PERIODIC INSPECTION", "mode": "contains" },
+        { "label": "300HR/12M Engine",   "ataMatch": "72/300",                    "mode": "exact"    },
+        { "label": "IFR Certs 91.411",   "ataMatch": "91.411",                    "mode": "contains" },
+        { "label": "IFR Certs 91.413",   "ataMatch": "91.413",                    "mode": "contains" },
+        { "label": "MR Mast Interim",    "ataMatch": "11-20 INTERIM",             "mode": "contains" },
+        { "label": "Freewheel Interim",  "ataMatch": "13-11 INTERIM",             "mode": "contains" },
+        { "label": "Transmission",       "ataMatch": "21-10 INTERIM",             "mode": "contains" },
+        { "label": "TRGB Interim",       "ataMatch": "10-11 INTERIM",             "mode": "contains" },
+        { "label": "Spring Link",        "ataMatch": "20-12 INTERIM",             "mode": "contains" }
+      ],
+      "thresholds": {
+        "criticalDays": 7,
+        "comingDays": 30,
+        "criticalHrs": 25,
+        "comingHrs": 100,
+        "componentWindow": 200
+      }
+    }
+  ]
+}
