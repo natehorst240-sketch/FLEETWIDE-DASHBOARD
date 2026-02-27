@@ -36,9 +36,9 @@ jobs:
 
       # ── Optional: fetch FlightAware AeroAPI positions ─────────────────
       - name: Fetch FlightAware positions (if API key set)
-        if: ${{ secrets.FLIGHTAWARE_API_KEY != '' }}
         env:
           FLIGHTAWARE_API_KEY: ${{ secrets.FLIGHTAWARE_API_KEY }}
+        if: ${{ env.FLIGHTAWARE_API_KEY != '' }}
         run: |
           python scripts/flightaware_fetcher.py \
             --config fleet_config.json \
@@ -78,4 +78,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          commit_message: "deploy: fleet dashboards ${{ github.run_number }}" 
+          commit_message: "deploy: fleet dashboards ${{ github.run_number }}"
