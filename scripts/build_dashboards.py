@@ -398,11 +398,17 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
     # ── Input paths ───────────────────────────────────────────────────────
     fleet_data_dir = data_root / fleet_id
-    daily_csv   = fleet_data_dir / "Due-List_Latest_aw109sp.csv"
-    daily_csv   = fleet_data_dir / "Due-List_Latest_bell407.csv"
-    weekly_csv  = fleet_data_dir / "Due-List_BIG_WEEKLY_aw109sp.csv"
+    # Try fleet-specific filename first (Due-List_Latest_aw109sp.csv),
+    # then fall back to generic (Due-List_Latest.csv) for backwards compatibility.
+    daily_csv  = fleet_data_dir / f"Due-List_Latest_{fleet_id}.csv"
+    if not daily_csv.exists():
+        daily_csv = fleet_data_dir / "Due-List_Latest.csv"
+
+    weekly_csv = fleet_data_dir / f"Due-List_BIG_WEEKLY_{fleet_id}.csv"
+    if not weekly_csv.exists():
+        weekly_csv = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
     history_path   = fleet_data_dir / "flight_hours_history.json"
-    skyrouter_path = fleet_data_dir / "skyrouter_status.json"
+    flightaware_path = fleet_data_dir / "flightaware_status.json"
     bases_path     = fleet_data_dir / "base_assignments.json"
 
     if not daily_csv.exists():
@@ -446,12 +452,12 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     log(f"  Updated flight hours history")
 
     # ── Optional data sources ─────────────────────────────────────────────
-    skyrouter = {}
-    if skyrouter_path.exists():
+    flightaware = {}
+    if flightaware_path.exists():
         try:
-            with open(skyrouter_path, encoding="utf-8") as f:
-                skyrouter = json.load(f).get("aircraft", {})
-            log(f"  Loaded SkyRouter data for {len(skyrouter)} aircraft")
+            with open(flightaware_path, encoding="utf-8") as f:
+                flightaware = json.load(f)
+            log(f"  Loaded FlightAware data for {len(flightaware.get("aircraft",{}))} aircraft")
         except Exception as e:
             log(f"  Warning: Could not load SkyRouter data: {e}")
 
@@ -489,8 +495,8 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     if base_assignments:
         out["base_assignments"] = base_assignments
 
-    if skyrouter:
-        out["skyrouter"] = skyrouter
+    if flightaware:
+        out["flightaware"] = flightaware
 
     # ── Write output ──────────────────────────────────────────────────────
     out_dir  = dist_root / fleet_id
