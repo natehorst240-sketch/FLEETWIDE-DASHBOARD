@@ -398,8 +398,9 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
     # ── Input paths ───────────────────────────────────────────────────────
     fleet_data_dir = data_root / fleet_id
-    daily_csv   = fleet_data_dir / "Due-List_Latest.csv"
-    weekly_csv  = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
+    daily_csv   = fleet_data_dir / "Due-List_Latest_aw109sp.csv"
+    daily_csv   = fleet_data_dir / "Due-List_Latest_bell407.csv"
+    weekly_csv  = fleet_data_dir / "Due-List_BIG_WEEKLY_aw109sp.csv"
     history_path   = fleet_data_dir / "flight_hours_history.json"
     skyrouter_path = fleet_data_dir / "skyrouter_status.json"
     bases_path     = fleet_data_dir / "base_assignments.json"
