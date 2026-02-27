@@ -457,7 +457,7 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
         try:
             with open(flightaware_path, encoding="utf-8") as f:
                 flightaware = json.load(f)
-            log(f"  Loaded FlightAware data for {len(flightaware.get("aircraft",{}))} aircraft")
+            log(f"  Loaded FlightAware data for {len(flightaware.get('aircraft', {}))} aircraft")
         except Exception as e:
             log(f"  Warning: Could not load SkyRouter data: {e}")
 
