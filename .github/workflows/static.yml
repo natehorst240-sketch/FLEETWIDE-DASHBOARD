@@ -1,43 +1,81 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Build & Deploy Fleet Dashboards
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
+    branches: [ main ]
+    paths:
+      - 'data/**'
+      - 'fleet_config.json'
+      - 'scripts/**'
+      - 'public/**'
+  schedule:
+    # Run every day at 07:00 UTC (adjust to your timezone)
+    - cron: '0 7 * * *'
+  workflow_dispatch:  # Manual trigger
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          # Upload entire repository
-          path: '.'
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas requests openpyxl
+
+      # ── Optional: fetch FlightAware AeroAPI positions ─────────────────
+      - name: Fetch FlightAware positions (if API key set)
+        if: ${{ secrets.FLIGHTAWARE_API_KEY != '' }}
+        env:
+          FLIGHTAWARE_API_KEY: ${{ secrets.FLIGHTAWARE_API_KEY }}
+        run: |
+          python scripts/flightaware_fetcher.py \
+            --config fleet_config.json \
+            --data data || true
+
+      # ── Build all fleet dashboards ────────────────────────────────────
+      - name: Build fleet dashboards
+        run: |
+          python scripts/build_dashboards.py \
+            --config fleet_config.json \
+            --data data \
+            --dist dist/data
+
+      # ── Copy frontend to dist ─────────────────────────────────────────
+      - name: Copy frontend to dist
+        run: |
+          cp -r public/* dist/
+          echo "dist/ contents:"
+          ls -la dist/
+          echo "dist/data/ contents:"
+          ls -la dist/data/ || true
+
+      # ── Commit any updated flight history files ────────────────────────
+      - name: Commit history updates
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/*/flight_hours_history.json || true
+          git add data/*/flightaware_status.json   || true
+          git add data/fa_spend_ledger.json          || true
+          git diff --staged --quiet || git commit -m "chore: update flight history + positions [skip ci]"
+          git push || true
+
+      # ── Deploy to GitHub Pages ────────────────────────────────────────
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          commit_message: "deploy: fleet dashboards ${{ github.run_number }}"
