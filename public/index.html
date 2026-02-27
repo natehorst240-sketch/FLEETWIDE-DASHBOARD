@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IHC Health Services — Fleet Maintenance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────────── */
+:root {
+  --bg:       #07090c;
+  --surface:  #0f1318;
+  --surface2: #161b23;
+  --surface3: #1c2230;
+  --border:   #1e2a38;
+  --border2:  #253040;
+
+  --green:   #00e676;
+  --amber:   #ffab00;
+  --red:     #ff1744;
+  --overdue: #ff6d00;
+  --blue:    #29b6f6;
+  --purple:  #7c4dff;
+
+  --text:    #c8d4e0;
+  --muted:   #445566;
+  --dim:     #2a3848;
+  --heading: #e4ecf4;
+
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif;
+
+  --sidebar-w: 220px;
+  --header-h:  54px;
+  --radius: 5px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
+  );
+  pointer-events: none;
+  z-index: 2000;
+}
+
+/* ─── HEADER ────────────────────────────────────────────────────────── */
+header {
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  font-family: var(--sans);
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--heading);
+  white-space: nowrap;
+}
+.logo-mark span { color: var(--blue); }
+
+.header-sep {
+  width: 1px; height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.header-subtitle {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.header-right {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+.header-right .live { color: var(--blue); }
+
+/* Config button in header */
+.btn-config {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted);
+  cursor: pointer;
+  transition: .15s;
+  white-space: nowrap;
+}
+.btn-config:hover { color: var(--blue); border-color: var(--blue); }
+.btn-config svg { width: 13px; height: 13px; }
+
+/* ─── BODY LAYOUT ───────────────────────────────────────────────────── */
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── LEFT SIDEBAR (fleet tabs) ─────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.sidebar-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 14px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fleet-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 13px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: .12s;
+  text-align: left;
+}
+.fleet-btn:hover {
+  background: rgba(41,182,246,0.04);
+  color: var(--text);
+}
+.fleet-btn.active {
+  background: rgba(41,182,246,0.07);
+  border-left-color: var(--blue);
+  color: var(--heading);
+}
+.fleet-btn .fleet-name {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.fleet-btn .fleet-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 5px;
+  line-height: 1.3;
+}
+
+.fleet-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.sidebar-spacer { flex: 1; }
+
+.sidebar-footer {
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* Legend bar */
+.legend-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.leg { display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 1px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-green   { background: var(--green);   box-shadow: 0 0 5px var(--green); }
+.dot-amber   { background: var(--amber);   box-shadow: 0 0 5px var(--amber); }
+.dot-red     { background: var(--red);     box-shadow: 0 0 5px var(--red); }
+.dot-overdue { background: var(--overdue); box-shadow: 0 0 5px var(--overdue); }
+
+/* Fleet view */
+.fleet-view { display: none; padding: 22px 24px 48px; }
+.fleet-view.active { display: block; }
+
+/* Inner tab row (per-fleet) */
+.inner-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.inner-tab {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: .12s;
+}
+.inner-tab:hover { color: var(--text); background: rgba(255,255,255,0.02); }
+.inner-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* Inner tab content panels */
+.inner-panel { display: none; }
+.inner-panel.active { display: block; }
+
+/* Summary bar */
+.summary-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  min-width: 130px;
+}
+.stat-val {
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-bar { width: 36px; height: 2px; border-radius: 1px; margin: 7px 0; }
+.stat-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Section label */
+.sec-lbl {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 22px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Error bar */
+.errbar {
+  border: 1px solid rgba(255,23,68,0.35);
+  background: rgba(255,23,68,0.07);
+  color: var(--red);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  margin: 14px 0;
+}
+
+/* ─── INSPECTION TABLE ──────────────────────────────────────────────── */
+.tbl-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+  min-width: 760px;
+}
+thead th {
+  background: var(--surface2);
+  padding: 9px 12px;
+  text-align: left;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td { padding: 10px 12px; border-bottom: 1px solid rgba(30,42,56,0.7); vertical-align: middle; }
+tbody tr:hover { background: rgba(255,255,255,0.018); }
+tbody tr:last-child td { border-bottom: none; }
+
+.tail-num { font-family: var(--sans); font-weight: 800; font-size: 15px; letter-spacing: 1px; color: var(--heading); }
+.ah-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 1px; }
+.tc { text-align: center; min-width: 70px; }
+
+.hb { display: inline-block; padding: 3px 9px; border-radius: 3px; font-size: 11px; text-align: center; min-width: 52px; }
+.hb-green   { background: rgba(0,230,118,0.07);   color: var(--green);   border: 1px solid rgba(0,230,118,0.2); }
+.hb-amber   { background: rgba(255,171,0,0.09);   color: var(--amber);   border: 1px solid rgba(255,171,0,0.22); }
+.hb-red     { background: rgba(255,23,68,0.09);   color: var(--red);     border: 1px solid rgba(255,23,68,0.22); }
+.hb-overdue { background: rgba(255,109,0,0.11);   color: var(--overdue); border: 1px solid rgba(255,109,0,0.28); animation: pulse 2s ease-in-out infinite; }
+.hb-na      { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+/* Filter chips */
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.chip {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 13px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: .12s;
+}
+.chip:hover { color: var(--text); border-color: rgba(41,182,246,0.4); }
+.chip.active { background: var(--blue); border-color: var(--blue); color: #000; }
+
+/* ─── COMPONENTS GRID ───────────────────────────────────────────────── */
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.ac-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ac-panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.ac-panel-tail { font-family: var(--sans); font-weight: 900; font-size: 16px; letter-spacing: 1px; color: var(--heading); }
+.ac-panel-hrs  { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+
+.comp-row { display: flex; align-items: center; padding: 9px 14px; border-bottom: 1px solid rgba(30,42,56,0.7); gap: 10px; }
+.comp-row:last-child { border-bottom: none; }
+.comp-bar { width: 3px; height: 30px; border-radius: 2px; flex-shrink: 0; }
+.cb-green   { background: var(--green); }
+.cb-amber   { background: var(--amber); }
+.cb-red     { background: var(--red); }
+.cb-overdue { background: var(--overdue); animation: pulse 2s ease-in-out infinite; }
+
+.comp-info { flex: 1; min-width: 0; }
+.comp-name { font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.comp-rem  { font-family: var(--mono); font-size: 10px; margin-top: 3px; }
+.rii { display: inline-block; padding: 1px 4px; font-size: 8px; font-family: var(--mono); background: rgba(255,171,0,0.12); color: var(--amber); border: 1px solid rgba(255,171,0,0.28); border-radius: 2px; margin-left: 4px; letter-spacing: 1px; }
+
+/* ─── FLIGHT HOURS ──────────────────────────────────────────────────── */
+.hrs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.hrs-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.hrs-card-hdr { padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.hrs-card-tail { font-family: var(--sans); font-weight: 900; font-size: 16px; letter-spacing: 1px; color: var(--heading); }
+.hrs-card-tt { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.hrs-card-body { padding: 16px; }
+.hrs-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(30,42,56,0.6); }
+.hrs-row:last-child { border-bottom: none; margin-bottom: 0; }
+.hrs-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.hrs-val { font-family: var(--sans); font-size: 22px; font-weight: 900; color: var(--heading); }
+.mini-chart { height: 70px; margin-top: 12px; }
+
+/* ─── BASES ─────────────────────────────────────────────────────────── */
+.bases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.base-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.base-card.occ { border-color: rgba(0,230,118,0.4); box-shadow: 0 0 0 1px rgba(0,230,118,0.1); }
+.base-hdr { padding: 10px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.base-name { font-family: var(--sans); font-weight: 900; font-size: 16px; letter-spacing: 1px; color: var(--heading); }
+.base-cap { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.base-body { padding: 14px; min-height: 70px; }
+.base-ac { display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(0,230,118,0.06); border: 1px solid rgba(0,230,118,0.18); border-radius: 3px; margin-bottom: 7px; }
+.base-ac-tail { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--heading); }
+.base-ac-hrs { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-left: auto; }
+.base-empty { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; padding: 18px; }
+.status-badge { display: inline-block; padding: 3px 8px; border-radius: 2px; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; }
+.sb-at { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.28); }
+.sb-away { background: rgba(255,171,0,0.12); color: var(--amber); border: 1px solid rgba(255,171,0,0.28); }
+
+.unassigned-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.ua-card { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; }
+.ua-tail { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--heading); }
+.ua-info { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 3px; }
+
+/* ─── CHART CARD ─────────────────────────────────────────────────────── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 18px;
+}
+.chart-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.chart-card canvas { display: block; width: 100% !important; height: 280px !important; }
+
+/* ─── CONFIG MODAL ───────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(7,9,12,0.88);
+  z-index: 1000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 820px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.modal-hdr {
+  padding: 18px 22px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title {
+  font-family: var(--sans);
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--heading);
+}
+.modal-close {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  transition: .12s;
+}
+.modal-close:hover { color: var(--red); border-color: var(--red); }
+
+.modal-body { padding: 22px; }
+
+/* Fleet list in modal */
+.fleet-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.fleet-entry {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.fleet-entry-hdr {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.fleet-entry-hdr:hover { background: rgba(41,182,246,0.04); }
+.fleet-entry-name-input {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--border2);
+  color: var(--heading);
+  outline: none;
+  width: 160px;
+  padding: 2px 0;
+}
+.fleet-entry-type-select {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 3px 8px;
+  outline: none;
+  cursor: pointer;
+}
+.fleet-entry-source {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 3px 8px;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+.fleet-entry-remove {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  transition: .12s;
+  flex-shrink: 0;
+}
+.fleet-entry-remove:hover { color: var(--red); background: rgba(255,23,68,0.08); }
+
+.fleet-entry-body { padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.fleet-entry-body .sec-lbl { margin-top: 12px; margin-bottom: 8px; }
+
+/* Inspection rows inside fleet entry */
+.insp-list { display: flex; flex-direction: column; gap: 7px; }
+.insp-row { display: flex; gap: 8px; align-items: center; }
+.insp-input {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 5px 8px;
+  outline: none;
+  transition: .12s;
+}
+.insp-input:focus { border-color: var(--blue); }
+.insp-input.wide { flex: 1; min-width: 0; }
+.insp-input.ata { width: 120px; }
+.insp-remove {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 14px;
+  transition: .12s;
+  flex-shrink: 0;
+}
+.insp-remove:hover { color: var(--red); background: rgba(255,23,68,0.08); }
+
+.btn-add-insp {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px dashed var(--border2);
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: .12s;
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+}
+.btn-add-insp:hover { color: var(--blue); border-color: var(--blue); }
+
+/* Threshold row */
+.thresh-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.thresh-group { display: flex; flex-direction: column; gap: 4px; }
+.thresh-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.thresh-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 5px 8px;
+  outline: none;
+  width: 80px;
+  transition: .12s;
+}
+.thresh-val:focus { border-color: var(--blue); }
+
+/* Add fleet button */
+.btn-add-fleet {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border: 1px dashed var(--border2);
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: .12s;
+  width: 100%;
+  justify-content: center;
+}
+.btn-add-fleet:hover { color: var(--blue); border-color: var(--blue); }
+
+/* Modal footer */
+.modal-ftr {
+  padding: 16px 22px;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.modal-save-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.modal-actions { display: flex; gap: 10px; }
+
+.btn-save {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 22px;
+  background: var(--blue);
+  border: none;
+  border-radius: var(--radius);
+  color: #000;
+  cursor: pointer;
+  transition: .12s;
+}
+.btn-save:hover { background: #45c5fc; }
+
+.btn-export {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted);
+  cursor: pointer;
+  transition: .12s;
+}
+.btn-export:hover { color: var(--text); border-color: var(--text); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  z-index: 3000;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: .25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Empty state */
+.empty-state {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Footer */
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 12px 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  letter-spacing: 1px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .sidebar { width: 160px; }
+  :root { --sidebar-w: 160px; }
+}
+@media (max-width: 640px) {
+  .app-body { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .fleet-btn { width: auto; border-left: none; border-bottom: 3px solid transparent; flex-direction: row; gap: 8px; align-items: center; }
+  .fleet-btn.active { border-bottom-color: var(--blue); border-left-color: transparent; }
+  .fleet-btn .fleet-meta { display: none; }
+  .sidebar-section-label, .sidebar-spacer, .sidebar-footer { display: none; }
+  .fleet-view { padding: 14px 14px 36px; }
+}
+
+/* Collapsible fleet entry chevron */
+.entry-chevron { margin-left: auto; color: var(--muted); font-size: 12px; transition: transform .2s; }
+.fleet-entry.expanded .entry-chevron { transform: rotate(180deg); }
+.fleet-entry-body { display: none; }
+.fleet-entry.expanded .fleet-entry-body { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo-mark">IHC <span>HEALTH</span> SERVICES</div>
+  <div class="header-sep"></div>
+  <div class="header-subtitle">Multi-Fleet Maintenance Dashboard</div>
+  <div style="flex:1"></div>
+  <button class="btn-config" onclick="openConfig()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="8" cy="8" r="2.5"/>
+      <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+    </svg>
+    Configure Fleets
+  </button>
+  <div class="header-right">
+    <div class="live" id="hdr-date">—</div>
+    <div id="hdr-generated">GENERATED: —</div>
+  </div>
+</header>
+
+<!-- ─── BODY ──────────────────────────────────────────────────────────── -->
+<div class="app-body">
+
+  <!-- Left sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Fleet</div>
+    <div id="fleet-nav"><!-- injected by JS --></div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-footer" id="sidebar-footer">0 Fleets loaded</div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main-content">
+
+    <!-- Legend -->
+    <div class="legend-bar">
+      <div class="leg"><div class="dot dot-green"></div> OK</div>
+      <div class="leg"><div class="dot dot-amber"></div> Coming Due</div>
+      <div class="leg"><div class="dot dot-red"></div> Critical</div>
+      <div class="leg"><div class="dot dot-overdue"></div> Overdue / Past Due</div>
+      <div style="margin-left:auto;font-size:9px;letter-spacing:1px;">Days-remaining takes priority over Hours-remaining</div>
+    </div>
+
+    <!-- Fleet views injected here -->
+    <div id="fleet-views">
+      <div style="padding:40px 24px;">
+        <div class="empty-state">
+          No fleet data loaded. Click <strong>Configure Fleets</strong> to add your fleets and inspection tracking rules, or ensure your <code>data/</code> JSON files are present.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .main-content -->
+</div><!-- .app-body -->
+
+<footer>
+  <span id="ftr-left">IHC Health Services — Aviation Maintenance</span>
+  <span id="ftr-right">—</span>
+</footer>
+
+<!-- ─── CONFIG MODAL ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="config-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Fleet Configuration</div>
+      <button class="modal-close" onclick="closeConfig()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7;">
+        Add each fleet you operate. Specify the JSON data file path, the inspections you track, and their ATA codes. 
+        The Python generator uses these same ATA codes to scrub and classify rows from your CSV exports.
+      </div>
+      <div class="fleet-list" id="config-fleet-list">
+        <!-- Fleet entries injected by JS -->
+      </div>
+      <button class="btn-add-fleet" onclick="addFleetEntry()">
+        <span>+</span> Add Fleet
+      </button>
+    </div>
+    <div class="modal-ftr">
+      <div class="modal-save-note">Config is saved to browser localStorage and exported as JSON for the Python scripts.</div>
+      <div class="modal-actions">
+        <button class="btn-export" onclick="exportConfig()">Export config.json</button>
+        <button class="btn-save" onclick="saveConfig()">Save & Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ─── CONSTANTS & STATE ────────────────────────────────────────────────
+const STORAGE_KEY = 'ihc_fleet_config_v2';
+
+let CONFIG = loadConfig();
+let FLEET_DATA = {}; // tail -> loaded JSON
+
+// ─── DEFAULT CONFIG ───────────────────────────────────────────────────
+function defaultConfig() {
+  return {
+    fleets: [
+      {
+        id: 'aw109sp',
+        name: 'AW109SP',
+        type: 'phase',        // 'phase' = interval columns, 'all' = all inspections list
+        dataFile: 'data/aw109sp/dashboard.json',
+        inspections: [
+          { label: '50 Hr',   ataMatch: '05 1000',       mode: 'contains' },
+          { label: '100 Hr',  ataMatch: '64 01[273]',    mode: 'contains' },
+          { label: '200 Hr',  ataMatch: '05 1005',       mode: 'contains' },
+          { label: '400 Hr',  ataMatch: '05 1010',       mode: 'contains' },
+          { label: '800 Hr',  ataMatch: '05 1015',       mode: 'contains' },
+          { label: '2400 Hr', ataMatch: '62 11[373]',    mode: 'contains' },
+          { label: '3200 Hr', ataMatch: '05 1020',       mode: 'contains' },
+        ],
+        thresholds: { criticalDays: 7, comingDays: 30, criticalHrs: 25, comingHrs: 100, componentWindow: 200 }
+      },
+      {
+        id: 'bell407',
+        name: 'Bell 407',
+        type: 'all',
+        dataFile: 'data/bell407/dashboard.json',
+        inspections: [
+          { label: '12 Month',           ataMatch: '12MO-INSPECTION',           mode: 'contains' },
+          { label: '24 Month',           ataMatch: '24MO-INSPECTION',           mode: 'contains' },
+          { label: '300HR/12M Airframe', ataMatch: '300HR-PERIODIC INSPECTION', mode: 'contains' },
+          { label: '300HR/12M Engine',   ataMatch: '72/300',                    mode: 'exact'    },
+          { label: 'IFR Certs 91.411',   ataMatch: '91.411',                    mode: 'contains' },
+          { label: 'IFR Certs 91.413',   ataMatch: '91.413',                    mode: 'contains' },
+          { label: 'MR Mast Interim',    ataMatch: '11-20 INTERIM',             mode: 'contains' },
+          { label: 'Freewheel Interim',  ataMatch: '13-11 INTERIM',             mode: 'contains' },
+          { label: 'Transmission',       ataMatch: '21-10 INTERIM',             mode: 'contains' },
+          { label: 'TRGB Interim',       ataMatch: '10-11 INTERIM',             mode: 'contains' },
+          { label: 'Spring Link',        ataMatch: '20-12 INTERIM',             mode: 'contains' },
+        ],
+        thresholds: { criticalDays: 7, comingDays: 30, criticalHrs: 25, comingHrs: 100, componentWindow: 200 }
+      }
+    ]
+  };
+}
+
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return defaultConfig();
+}
+
+function saveConfigToStorage(cfg) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+}
+
+// ─── SEVERITY CLASSIFICATION ──────────────────────────────────────────
+function classifyItem(item, thresh) {
+  const t = thresh || { criticalDays:7, comingDays:30, criticalHrs:25, comingHrs:100 };
+  const d = numVal(item.remaining_days ?? item.days_remaining);
+  if (d !== null) {
+    if (d < 0) return 'overdue';
+    if (d <= t.criticalDays) return 'critical';
+    if (d <= t.comingDays) return 'coming';
+    return 'ok';
+  }
+  const h = numVal(item.remaining_hours ?? item.hours_remaining);
+  if (h !== null) {
+    if (h < 0) return 'overdue';
+    if (h <= t.criticalHrs) return 'critical';
+    if (h <= t.comingHrs) return 'coming';
+    return 'ok';
+  }
+  const s = str(item.status ?? item.next_due_status).toUpperCase();
+  if (s.includes('PAST DUE') || s.includes('OVERDUE')) return 'overdue';
+  if (s.includes('CRITICAL')) return 'critical';
+  if (s.includes('COMING') || s.includes('WITHIN')) return 'coming';
+  if (s.includes('OK') || s.includes('TOLERANCE')) return 'ok';
+  return 'na';
+}
+
+function scoreItem(item, thresh) {
+  const sev = classifyItem(item, thresh);
+  const d = numVal(item.remaining_days ?? item.days_remaining);
+  const h = numVal(item.remaining_hours ?? item.hours_remaining);
+  const pri = { overdue:0, critical:10000, coming:20000, ok:30000, na:40000 }[sev] ?? 40000;
+  const sub = (d !== null) ? d : (h !== null) ? h : 9999;
+  return pri + sub;
+}
+
+function sevColor(sev) {
+  return { overdue:'var(--overdue)', critical:'var(--red)', coming:'var(--amber)', ok:'var(--green)' }[sev] ?? 'var(--muted)';
+}
+function hbClass(sev) {
+  return { overdue:'hb-overdue', critical:'hb-red', coming:'hb-amber', ok:'hb-green' }[sev] ?? 'hb-na';
+}
+function cbClass(sev) {
+  return { overdue:'cb-overdue', critical:'cb-red', coming:'cb-amber', ok:'cb-green' }[sev] ?? '';
+}
+
+function numVal(x) {
+  if (x === null || x === undefined || x === '') return null;
+  const n = Number(x);
+  return isNaN(n) ? null : n;
+}
+function str(x) { return (x === null || x === undefined) ? '' : String(x); }
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (isNaN(dt)) return str(d);
+  return dt.toISOString().slice(0,10);
+}
+
+// ─── DATA LOADING ─────────────────────────────────────────────────────
+async function loadAllFleets() {
+  const errs = [];
+  for (const fleet of CONFIG.fleets) {
+    try {
+      const res = await fetch(fleet.dataFile + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      FLEET_DATA[fleet.id] = await res.json();
+    } catch(e) {
+      errs.push(`[${fleet.name}] ${e.message}`);
+      FLEET_DATA[fleet.id] = null;
+    }
+  }
+  return errs;
+}
+
+// Normalize items from various JSON schemas
+function getItems(data, fleetCfg) {
+  if (!data) return [];
+  const out = [];
+
+  // Schema A: data.aircraft = { "TAIL": { items:[], ... } } (Bell 407 style)
+  if (data.aircraft && typeof data.aircraft === 'object' && !Array.isArray(data.aircraft)) {
+    for (const [tail, ac] of Object.entries(data.aircraft)) {
+      for (const it of (ac.items || [])) {
+        out.push({
+          tail,
+          airframe_hours: ac.airframe_hours,
+          inspection: it.label || it.inspection || it.description || it.name || '—',
+          ata: it.ata || it.ata_code || '—',
+          due_date: it.next_due_date || it.due_date || null,
+          remaining_days: it.remaining_days ?? it.remaining_days ?? null,
+          remaining_hours: it.remaining_hours ?? null,
+          status: it.status || it.next_due_status || '',
+          tracked: it.tracked,
+          tracked_label: it.tracked_label,
+          rii: it.rii || false,
+        });
+      }
+    }
+    return out;
+  }
+
+  // Schema B: data.aircraft = [{ tail, items:[] }] (array style)
+  if (Array.isArray(data.aircraft)) {
+    for (const ac of data.aircraft) {
+      const tail = ac.tail || ac.registration || ac.name || '?';
+      for (const it of (ac.items || [])) {
+        out.push({
+          tail,
+          airframe_hours: ac.airframe_hours,
+          inspection: it.label || it.inspection || it.description || it.name || '—',
+          ata: it.ata || it.ata_code || '—',
+          due_date: it.next_due_date || it.due_date || null,
+          remaining_days: it.remaining_days ?? null,
+          remaining_hours: it.remaining_hours ?? null,
+          status: it.status || '',
+          tracked: it.tracked,
+          tracked_label: it.tracked_label,
+          rii: it.rii || false,
+        });
+      }
+    }
+    return out;
+  }
+
+  // Schema C: data.items = [...] (flat)
+  if (Array.isArray(data.items)) {
+    return data.items.map(it => ({
+      tail: it.tail || it.registration || '?',
+      airframe_hours: it.airframe_hours,
+      inspection: it.inspection || it.name || it.label || '—',
+      ata: it.ata || it.ata_code || '—',
+      due_date: it.due_date || it.next_due_date || null,
+      remaining_days: it.remaining_days ?? null,
+      remaining_hours: it.remaining_hours ?? null,
+      status: it.status || '',
+      tracked: it.tracked,
+      tracked_label: it.tracked_label,
+      rii: it.rii || false,
+    }));
+  }
+
+  return out;
+}
+
+// Get phase-inspection interval data (AW109SP style)
+function getIntervals(data, fleetCfg) {
+  if (!data || !data.aircraft || Array.isArray(data.aircraft)) return {};
+  // data.aircraft is object keyed by tail
+  const result = {};
+  for (const [tail, ac] of Object.entries(data.aircraft)) {
+    if (!result[tail]) result[tail] = { airframe_hours: ac.airframe_hours, intervals: {} };
+    for (const it of (ac.items || [])) {
+      // Match against configured inspections
+      for (const insp of fleetCfg.inspections) {
+        if (ataMatches(it.ata, insp)) {
+          if (!result[tail].intervals[insp.label]) {
+            result[tail].intervals[insp.label] = {
+              rem_hrs: it.remaining_hours,
+              rem_days: it.remaining_days,
+              status: it.status || it.next_due_status || '',
+            };
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+function ataMatches(ataVal, inspCfg) {
+  if (!ataVal) return false;
+  const a = str(ataVal).toUpperCase().replace(/\s*([-./])\s*/g, '$1').replace(/\s+/g,' ').trim();
+  const t = str(inspCfg.ataMatch).toUpperCase().replace(/\s*([-./])\s*/g, '$1').replace(/\s+/g,' ').trim();
+  if (!a || !t) return false;
+  if (inspCfg.mode === 'exact') return a === t || a.split(/\s+/).includes(t);
+  return a.includes(t);
+}
+
+// ─── SIDEBAR RENDERING ────────────────────────────────────────────────
+function renderSidebar() {
+  const nav = document.getElementById('fleet-nav');
+  nav.innerHTML = '';
+  CONFIG.fleets.forEach((fleet, i) => {
+    const data = FLEET_DATA[fleet.id];
+    const items = getItems(data, fleet);
+    const counts = { overdue:0, critical:0, coming:0 };
+    items.forEach(it => {
+      const sev = classifyItem(it, fleet.thresholds);
+      if (sev === 'overdue') counts.overdue++;
+      else if (sev === 'critical') counts.critical++;
+      else if (sev === 'coming') counts.coming++;
+    });
+
+    const dotCol = counts.overdue ? 'var(--overdue)' : counts.critical ? 'var(--red)' : counts.coming ? 'var(--amber)' : 'var(--green)';
+    const btn = document.createElement('button');
+    btn.className = 'fleet-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.fleetId = fleet.id;
+    btn.onclick = () => switchFleet(fleet.id);
+    btn.innerHTML = `
+      <div class="fleet-name">
+        <span class="fleet-dot" style="background:${dotCol};box-shadow:0 0 5px ${dotCol}"></span>
+        ${fleet.name}
+      </div>
+      <div class="fleet-meta">${data ? `${Object.keys(data.aircraft || {}).length || '?'} AC` : 'NO DATA'} · ${counts.overdue ? `${counts.overdue} OD ` : ''}${counts.critical ? `${counts.critical} CRIT ` : ''}${counts.coming ? `${counts.coming} DUE` : counts.overdue || counts.critical ? '' : 'ALL OK'}</div>
+    `;
+    nav.appendChild(btn);
+  });
+  document.getElementById('sidebar-footer').textContent = `${CONFIG.fleets.length} Fleet${CONFIG.fleets.length !== 1 ? 's' : ''} configured`;
+}
+
+function switchFleet(fleetId) {
+  document.querySelectorAll('.fleet-btn').forEach(b => b.classList.toggle('active', b.dataset.fleetId === fleetId));
+  document.querySelectorAll('.fleet-view').forEach(v => v.classList.toggle('active', v.dataset.fleetId === fleetId));
+}
+
+// ─── FLEET VIEW RENDERING ─────────────────────────────────────────────
+function renderAllFleets() {
+  const container = document.getElementById('fleet-views');
+  container.innerHTML = '';
+
+  if (!CONFIG.fleets.length) {
+    container.innerHTML = '<div style="padding:40px 24px;"><div class="empty-state">No fleets configured. Click <strong>Configure Fleets</strong> to get started.</div></div>';
+    return;
+  }
+
+  CONFIG.fleets.forEach((fleet, i) => {
+    const view = document.createElement('div');
+    view.className = 'fleet-view' + (i === 0 ? ' active' : '');
+    view.dataset.fleetId = fleet.id;
+    view.innerHTML = buildFleetHTML(fleet);
+    container.appendChild(view);
+
+    // Initialize charts after DOM insertion
+    initFleetCharts(fleet, view);
+  });
+}
+
+function buildFleetHTML(fleet) {
+  const data = FLEET_DATA[fleet.id];
+  const items = getItems(data, fleet);
+  const thresh = fleet.thresholds;
+
+  if (!data) {
+    return `<div class="errbar">Could not load <code>${fleet.dataFile}</code>. Check the file path and GitHub Pages deployment.</div>`;
+  }
+
+  // Summary counts
+  let ov=0, cr=0, co=0, tr=0;
+  items.forEach(it => {
+    const sev = classifyItem(it, thresh);
+    if (sev === 'na') return;
+    tr++;
+    if (sev === 'overdue') ov++;
+    else if (sev === 'critical') cr++;
+    else if (sev === 'coming') co++;
+  });
+
+  const reportDate = data.generated_at_utc || data.report_date || '—';
+  const gen = data.generated_at_utc || '—';
+
+  // Update header if this is the first fleet
+  document.getElementById('hdr-date').textContent = `REPORT DATE: ${fmtDate(reportDate)}`;
+  document.getElementById('hdr-generated').textContent = `GENERATED: ${gen.slice(0,19).replace('T',' ')}`;
+
+  const summaryHTML = `
+  <div class="summary-bar">
+    <div class="stat-card"><div class="stat-val" style="color:var(--overdue)">${ov}</div><div class="stat-bar" style="background:var(--overdue)"></div><div class="stat-lbl">Overdue</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--red)">${cr}</div><div class="stat-bar" style="background:var(--red)"></div><div class="stat-lbl">Critical</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--amber)">${co}</div><div class="stat-bar" style="background:var(--amber)"></div><div class="stat-lbl">Coming Due</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${tr}</div><div class="stat-bar" style="background:var(--blue)"></div><div class="stat-lbl">Tracked</div></div>
+  </div>`;
+
+  // Build inner tabs
+  const tabId = (name) => `${fleet.id}-${name}`;
+
+  let tabBtns = `
+    <button class="inner-tab active" onclick="switchInnerTab('${fleet.id}', 'maint', this)">Maintenance</button>
+    <button class="inner-tab" onclick="switchInnerTab('${fleet.id}', 'components', this)">Components</button>
+    <button class="inner-tab" onclick="switchInnerTab('${fleet.id}', 'hours', this)">Flight Hours</button>
+    <button class="inner-tab" onclick="switchInnerTab('${fleet.id}', 'bases', this)">Bases</button>
+  `;
+
+  const maintHTML = buildMaintTab(fleet, data, items);
+  const compHTML  = buildComponentsTab(fleet, data, items);
+  const hoursHTML = buildHoursTab(fleet, data);
+  const basesHTML = buildBasesTab(fleet, data);
+
+  return `
+  ${summaryHTML}
+  <div class="inner-tabs">${tabBtns}</div>
+  <div id="${tabId('maint')}" class="inner-panel active">${maintHTML}</div>
+  <div id="${tabId('components')}" class="inner-panel">${compHTML}</div>
+  <div id="${tabId('hours')}" class="inner-panel">${hoursHTML}</div>
+  <div id="${tabId('bases')}" class="inner-panel">${basesHTML}</div>
+  `;
+}
+
+function switchInnerTab(fleetId, tabName, btn) {
+  const prefix = `${fleetId}-`;
+  btn.closest('.fleet-view').querySelectorAll('.inner-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.fleet-view').querySelectorAll('.inner-panel').forEach(p => {
+    p.classList.toggle('active', p.id === prefix + tabName);
+  });
+}
+
+// ─── MAINTENANCE TAB ──────────────────────────────────────────────────
+function buildMaintTab(fleet, data, items) {
+  const thresh = fleet.thresholds;
+
+  if (fleet.type === 'phase') {
+    return buildPhaseTable(fleet, data);
+  }
+
+  // 'all' mode: sortable card/table view of all inspections
+  const tails = [...new Set(items.map(it => it.tail))].sort();
+  const byTail = new Map();
+  tails.forEach(t => byTail.set(t, items.filter(i => i.tail === t)));
+
+  let filterRow = `
+  <div class="chip-row" id="chip-${fleet.id}">
+    <button class="chip active" onclick="setFleetFilter('${fleet.id}', 'all', this)">All</button>
+    <button class="chip" onclick="setFleetFilter('${fleet.id}', 'overdue', this)">Overdue</button>
+    <button class="chip" onclick="setFleetFilter('${fleet.id}', 'critical', this)">Critical</button>
+    <button class="chip" onclick="setFleetFilter('${fleet.id}', 'coming', this)">Coming</button>
+    <button class="chip" onclick="setFleetFilter('${fleet.id}', 'ok', this)">OK</button>
+  </div>`;
+
+  let tableRows = '';
+  tails.forEach(tail => {
+    const acItems = byTail.get(tail).slice().sort((a,b) => scoreItem(a,thresh) - scoreItem(b,thresh));
+    const airframeHrs = acItems[0]?.airframe_hours ?? '';
+    acItems.forEach(it => {
+      const sev = classifyItem(it, thresh);
+      const d = numVal(it.remaining_days);
+      const h = numVal(it.remaining_hours);
+      const dStr = d !== null ? (d < 0 ? `OD ${Math.abs(d)}d` : `${d}d`) : '—';
+      const hStr = h !== null ? (h < 0 ? `OD ${h.toFixed(1)}h` : `${h.toFixed(1)}h`) : '—';
+      tableRows += `
+      <tr data-sev="${sev}" data-fleet="${fleet.id}">
+        <td><div class="tail-num">${tail}</div><div class="ah-sub">${airframeHrs ? airframeHrs + ' TT' : ''}</div></td>
+        <td>${str(it.inspection)}</td>
+        <td><span style="font-size:10px;color:var(--muted)">${str(it.ata)}</span></td>
+        <td class="tc"><span class="hb ${hbClass(sev)}">${sev.toUpperCase()}</span></td>
+        <td class="tc"><span class="hb ${hbClass(sev)}">${dStr}</span></td>
+        <td class="tc"><span class="hb ${hbClass(sev)}">${hStr}</span></td>
+        <td style="font-size:10px;color:var(--muted)">${fmtDate(it.due_date)}</td>
+      </tr>`;
+    });
+  });
+
+  return `
+  <div class="sec-lbl">Inspection Status</div>
+  ${filterRow}
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Aircraft</th><th>Inspection</th><th>ATA</th>
+        <th class="tc">Status</th><th class="tc">Days Rem</th>
+        <th class="tc">Hrs Rem</th><th>Due Date</th>
+      </tr></thead>
+      <tbody id="tbody-${fleet.id}">${tableRows}</tbody>
+    </table>
+  </div>`;
+}
+
+function buildPhaseTable(fleet, data) {
+  const labels = fleet.inspections.map(i => i.label);
+  const intervals = getIntervals(data, fleet);
+  const thresh = fleet.thresholds;
+
+  // 200hr chart data
+  const chart200Label = labels.find(l => l.includes('200'));
+  let chartRows = [];
+
+  const tails = Object.keys(intervals).sort();
+
+  let headerCols = labels.map(l => `<th class="tc">${l}</th>`).join('');
+  let tableRows = '';
+
+  tails.forEach(tail => {
+    const ac = intervals[tail];
+    const ah = ac.airframe_hours;
+    let cells = '';
+    labels.forEach((lbl, idx) => {
+      const iv = ac.intervals[lbl];
+      cells += `<td class="tc">${fmtIntervalCell(iv, thresh)}</td>`;
+      if (lbl === chart200Label && iv?.rem_hrs != null) {
+        chartRows.push([tail, iv.rem_hrs]);
+      }
+    });
+    tableRows += `<tr><td><div class="tail-num">${tail}</div><div class="ah-sub">${ah ? ah+' TT' : ''}</div></td>${cells}</tr>`;
+  });
+
+  // Sort chart rows
+  chartRows.sort((a,b) => a[1]-b[1]);
+  const chartLabels = chartRows.map(r => r[0]);
+  const chartVals   = chartRows.map(r => r[1].toFixed(2));
+  const chartId = `chart-${fleet.id}-phase`;
+
+  let filterRow = `
+  <div class="chip-row">
+    <button class="chip active" onclick="filterPhaseTable('${fleet.id}', 'all', this)">All</button>
+    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'overdue', this)">Overdue</button>
+    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'critical', this)">Critical</button>
+    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'coming', this)">Coming</button>
+    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'ok', this)">OK</button>
+  </div>`;
+
+  return `
+  <div class="chart-card">
+    <div class="chart-title">${chart200Label || labels[2] || 'Phase'} Inspection — Hours Remaining (Sorted)</div>
+    <canvas id="${chartId}" data-labels='${JSON.stringify(chartLabels)}' data-values='${JSON.stringify(chartVals)}'></canvas>
+  </div>
+  <div class="sec-lbl">Phase Inspections — Hours Remaining</div>
+  ${filterRow}
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Aircraft</th>${headerCols}</tr></thead>
+      <tbody id="phase-tbody-${fleet.id}">${tableRows}</tbody>
+    </table>
+  </div>`;
+}
+
+function fmtIntervalCell(iv, thresh) {
+  if (!iv) return '<span class="hb-na">—</span>';
+  const h = numVal(iv.rem_hrs);
+  const d = numVal(iv.rem_days);
+  let sev;
+  let label;
+  if (h !== null) {
+    sev = h < 0 ? 'overdue' : h <= thresh.criticalHrs ? 'critical' : h <= thresh.comingHrs ? 'coming' : 'ok';
+    label = h < 0 ? `OD ${Math.abs(h).toFixed(0)}` : h.toFixed(1);
+  } else if (d !== null) {
+    sev = d < 0 ? 'overdue' : d <= thresh.criticalDays ? 'critical' : d <= thresh.comingDays ? 'coming' : 'ok';
+    label = d < 0 ? `OD ${Math.abs(d).toFixed(0)}d` : `${d.toFixed(0)}d`;
+  } else {
+    const s = str(iv.status).toUpperCase();
+    sev = s.includes('PAST DUE') ? 'overdue' : s.includes('COMING') ? 'coming' : s.includes('TOLERANCE') || s.includes('OK') ? 'ok' : 'na';
+    label = iv.status ? iv.status.slice(0,8) : '?';
+  }
+  return `<span class="hb ${hbClass(sev)}">${label}</span>`;
+}
+
+function setFleetFilter(fleetId, sev, btn) {
+  btn.closest('.chip-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`#tbody-${fleetId} tr`).forEach(tr => {
+    tr.style.display = (sev === 'all' || tr.dataset.sev === sev) ? '' : 'none';
+  });
+}
+
+function filterPhaseTable(fleetId, sev, btn) {
+  btn.closest('.chip-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`#phase-tbody-${fleetId} tr`).forEach(tr => {
+    if (sev === 'all') { tr.style.display = ''; return; }
+    const badges = tr.querySelectorAll('.hb');
+    let show = false;
+    badges.forEach(b => {
+      const cls = b.className;
+      if (sev === 'overdue'  && cls.includes('hb-overdue')) show = true;
+      if (sev === 'critical' && cls.includes('hb-red'))     show = true;
+      if (sev === 'coming'   && cls.includes('hb-amber'))   show = true;
+      if (sev === 'ok'       && cls.includes('hb-green'))   show = true;
+    });
+    tr.style.display = show ? '' : 'none';
+  });
+}
+
+// ─── COMPONENTS TAB ───────────────────────────────────────────────────
+function buildComponentsTab(fleet, data, items) {
+  const thresh = fleet.thresholds;
+  const win = thresh.componentWindow || 200;
+
+  // Filter to component-style items (PART or retirement keywords in inspection name)
+  const retKw = ['RETIRE','OVERHAUL','DISCARD','LIFE LIMIT','TBO','REPLACEMENT','REPLACE','CHANGE OIL','NOZZLE','BATTERY','CARTRIDGE','BELT','FILTER'];
+  const compItems = items.filter(it => {
+    const d = numVal(it.remaining_days);
+    const h = numVal(it.remaining_hours);
+    const nameU = str(it.inspection).toUpperCase();
+    const isRetType = retKw.some(k => nameU.includes(k));
+    if (!isRetType) return false;
+    if (h !== null && h <= win) return true;
+    if (d !== null && d <= 60) return true;
+    const s = str(it.status).toUpperCase();
+    if (s.includes('PAST DUE')) return true;
+    return false;
+  });
+
+  if (!compItems.length) {
+    return `<div class="sec-lbl">Component Retirement / Overhaul — Within ${win} Hours</div><div class="empty-state">No components within ${win} hours across fleet.</div>`;
+  }
+
+  const byTail = new Map();
+  compItems.forEach(it => {
+    if (!byTail.has(it.tail)) byTail.set(it.tail, []);
+    byTail.get(it.tail).push(it);
+  });
+
+  let panelsHTML = '';
+  byTail.forEach((comps, tail) => {
+    const sorted = comps.slice().sort((a,b) => {
+      const ah = numVal(a.remaining_hours) ?? (numVal(a.remaining_days) ?? 0) * 0.5;
+      const bh = numVal(b.remaining_hours) ?? (numVal(b.remaining_days) ?? 0) * 0.5;
+      return ah - bh;
+    });
+    const ah = sorted[0]?.airframe_hours ?? '';
+    let rows = '';
+    sorted.forEach(it => {
+      const d = numVal(it.remaining_days);
+      const h = numVal(it.remaining_hours);
+      const s = str(it.status).toUpperCase();
+      let sev;
+      if (h !== null) sev = h < 0 ? 'overdue' : h <= 25 ? 'critical' : h <= 100 ? 'coming' : 'ok';
+      else if (d !== null) sev = d < 0 ? 'overdue' : d <= 7 ? 'critical' : d <= 30 ? 'coming' : 'ok';
+      else sev = s.includes('PAST DUE') ? 'overdue' : 'ok';
+
+      const remLabel = h !== null
+        ? (h < 0 ? `OVERDUE — ${Math.abs(h).toFixed(1)} hrs past limit` : `${h.toFixed(1)} hrs remaining`)
+        : d !== null
+        ? (d < 0 ? `OVERDUE — ${Math.abs(d).toFixed(0)} days past limit` : `${d.toFixed(0)} days remaining`)
+        : str(it.status);
+
+      const rii = it.rii ? '<span class="rii">RII</span>' : '';
+      rows += `
+      <div class="comp-row">
+        <div class="comp-bar ${cbClass(sev)}"></div>
+        <div class="comp-info">
+          <div class="comp-name" title="${str(it.inspection)}">${str(it.inspection)}${rii}</div>
+          <div class="comp-rem" style="color:${sevColor(sev)}">${remLabel}</div>
+        </div>
+      </div>`;
+    });
+    panelsHTML += `
+    <div class="ac-panel">
+      <div class="ac-panel-hdr">
+        <div class="ac-panel-tail">${tail}</div>
+        <div class="ac-panel-hrs">${ah ? ah+' TT' : ''}</div>
+      </div>
+      ${rows}
+    </div>`;
+  });
+
+  return `<div class="sec-lbl">Component Retirement / Overhaul — Within ${win} Hours</div><div class="comp-grid">${panelsHTML}</div>`;
+}
+
+// ─── FLIGHT HOURS TAB ─────────────────────────────────────────────────
+function buildHoursTab(fleet, data) {
+  if (!data) return '<div class="empty-state">No data available.</div>';
+  const history = data.flight_hours_history || {};
+  const aircraft = data.aircraft || {};
+  const tails = Object.keys(aircraft).sort();
+
+  if (!tails.length) return '<div class="empty-state">No aircraft in dataset.</div>';
+
+  let cards = '';
+  tails.forEach(tail => {
+    const ac = aircraft[tail];
+    const ah = ac?.airframe_hours;
+    const tailHistory = history[tail] || {};
+    const dates = Object.keys(tailHistory).sort();
+
+    const chartId = `hrs-chart-${fleet.id}-${tail.replace(/\W/g,'')}`;
+
+    let chartHtml = dates.length >= 2
+      ? `<canvas class="mini-chart" id="${chartId}" data-dates='${JSON.stringify(dates.slice(-10).map(d=>d.slice(5)))}' data-hours='${JSON.stringify(dates.slice(-10).map(d=>tailHistory[d].hours))}'></canvas>`
+      : `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);padding:16px;text-align:center;">Need 2+ days of data</div>`;
+
+    cards += `
+    <div class="hrs-card">
+      <div class="hrs-card-hdr">
+        <div class="hrs-card-tail">${tail}</div>
+        <div class="hrs-card-tt">${ah ? ah.toFixed(1)+' TT' : 'N/A'}</div>
+      </div>
+      <div class="hrs-card-body">
+        <div class="hrs-row">
+          <div class="hrs-lbl">Last 7 Days</div>
+          <div class="hrs-val">—</div>
+        </div>
+        <div class="hrs-row">
+          <div class="hrs-lbl">Last 30 Days</div>
+          <div class="hrs-val">—</div>
+        </div>
+        ${chartHtml}
+      </div>
+    </div>`;
+  });
+
+  return `<div class="sec-lbl">Flight Hours by Aircraft</div><div class="hrs-grid">${cards}</div>`;
+}
+
+// ─── BASES TAB ────────────────────────────────────────────────────────
+function buildBasesTab(fleet, data) {
+  if (!data?.base_assignments) {
+    return '<div class="empty-state">No base assignment data in JSON. Run the base assignment generator and include <code>base_assignments</code> in your dashboard JSON.</div>';
+  }
+  const ba = data.base_assignments;
+  const assignments = ba.assignments || {};
+  const basesInfo   = ba.bases || {};
+
+  const baseIds = Object.keys(basesInfo);
+  let baseCards = '';
+  baseIds.forEach(bid => {
+    const binfo = basesInfo[bid];
+    const bdata = assignments[bid] || { aircraft:[], status:'available' };
+    const acs   = bdata.aircraft || [];
+    const occ   = acs.length > 0;
+
+    let acHTML = acs.length ? acs.map(a => `
+      <div class="base-ac">
+        <div class="base-ac-tail">${a.tail}</div>
+        <span class="status-badge ${a.at_base !== false ? 'sb-at' : 'sb-away'}">${a.at_base !== false ? 'AT BASE' : 'AWAY'}</span>
+        <div class="base-ac-hrs">${a.hours ? a.hours.toFixed(1)+' TT' : ''}</div>
+      </div>`).join('') : '<div class="base-empty">No aircraft assigned</div>';
+
+    baseCards += `
+    <div class="base-card ${occ ? 'occ' : ''}">
+      <div class="base-hdr">
+        <div class="base-name">${binfo.name || bid}</div>
+        <div class="base-cap">${acs.length} aircraft</div>
+      </div>
+      <div class="base-body">${acHTML}</div>
+    </div>`;
+  });
+
+  const unassigned = assignments.unassigned || [];
+  let uaHTML = '';
+  if (unassigned.length) {
+    const uaCards = unassigned.map(a => `
+      <div class="ua-card">
+        <div class="ua-tail">${a.tail}</div>
+        <div class="ua-info">${a.hours ? a.hours.toFixed(1)+' TT' : 'N/A'}</div>
+        <div class="ua-info">${a.distance_from_closest ? a.distance_from_closest.toFixed(1)+' mi from '+a.closest_base : 'Position unknown'}</div>
+      </div>`).join('');
+    uaHTML = `<div class="sec-lbl">Away from Base</div><div class="unassigned-grid">${uaCards}</div>`;
+  }
+
+  return `
+  <div class="sec-lbl">Aircraft Base Assignments</div>
+  <div class="bases-grid">${baseCards}</div>
+  ${uaHTML}`;
+}
+
+// ─── CHART INITIALIZATION ─────────────────────────────────────────────
+function initFleetCharts(fleet, viewEl) {
+  // Phase bar chart
+  const phaseCanvas = viewEl.querySelector(`#chart-${fleet.id}-phase`);
+  if (phaseCanvas) {
+    const labels = JSON.parse(phaseCanvas.dataset.labels || '[]');
+    const values = JSON.parse(phaseCanvas.dataset.values || '[]');
+    if (labels.length) {
+      new Chart(phaseCanvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Hours Remaining', data: values,
+            backgroundColor: values.map(v => v < 0 ? 'rgba(255,109,0,0.4)' : v <= 25 ? 'rgba(255,23,68,0.4)' : v <= 100 ? 'rgba(255,171,0,0.4)' : 'rgba(0,230,118,0.3)'),
+            borderColor:     values.map(v => v < 0 ? '#ff6d00' : v <= 25 ? '#ff1744' : v <= 100 ? '#ffab00' : '#00e676'),
+            borderWidth: 1, borderRadius: 3 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { title: { display: true, text: 'Hours Remaining', color: '#445566', font: { family: "'Share Tech Mono'", size: 10 } }, ticks: { color: '#445566', font: { size: 10 } }, grid: { color: 'rgba(30,42,56,0.5)' } },
+            x: { ticks: { color: '#445566', font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  // Mini flight hours charts
+  viewEl.querySelectorAll('.mini-chart[data-dates]').forEach(canvas => {
+    const dates = JSON.parse(canvas.dataset.dates || '[]');
+    const hours = JSON.parse(canvas.dataset.hours || '[]');
+    if (dates.length >= 2) {
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{ data: hours, borderColor: '#29b6f6', backgroundColor: 'rgba(41,182,246,0.08)', borderWidth: 2, tension: 0.4, pointRadius: 2, pointBackgroundColor: '#29b6f6' }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#445566', font: { size: 9 } }, grid: { color: 'rgba(30,42,56,0.5)' } },
+            x: { ticks: { color: '#445566', font: { size: 9 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  });
+}
+
+// ─── CONFIG MODAL ─────────────────────────────────────────────────────
+function openConfig() {
+  renderConfigModal();
+  document.getElementById('config-modal').classList.add('open');
+}
+function closeConfig() {
+  document.getElementById('config-modal').classList.remove('open');
+}
+
+function renderConfigModal() {
+  const list = document.getElementById('config-fleet-list');
+  list.innerHTML = '';
+  CONFIG.fleets.forEach((fleet, fi) => renderFleetEntry(fleet, fi));
+}
+
+function renderFleetEntry(fleet, fi) {
+  const list = document.getElementById('config-fleet-list');
+  const entry = document.createElement('div');
+  entry.className = 'fleet-entry expanded';
+  entry.dataset.fi = fi;
+
+  const inspRows = (fleet.inspections || []).map((insp, ii) => `
+    <div class="insp-row" data-ii="${ii}">
+      <input class="insp-input wide" placeholder="Label (e.g. 200 Hr)" value="${insp.label || ''}" data-field="label">
+      <input class="insp-input ata" placeholder="ATA match" value="${insp.ataMatch || ''}" data-field="ataMatch">
+      <select class="fleet-entry-type-select" data-field="mode" style="width:90px;">
+        <option value="contains" ${insp.mode==='contains'?'selected':''}>contains</option>
+        <option value="exact"    ${insp.mode==='exact'?'selected':''}>exact</option>
+      </select>
+      <button class="insp-remove" onclick="removeInspection(${fi}, ${ii})" title="Remove">✕</button>
+    </div>`).join('');
+
+  const t = fleet.thresholds || {};
+  entry.innerHTML = `
+    <div class="fleet-entry-hdr" onclick="toggleEntry(this)">
+      <input class="fleet-entry-name-input" value="${fleet.name || ''}" placeholder="Fleet Name" onclick="e=>e.stopPropagation()" data-field="name">
+      <select class="fleet-entry-type-select" data-field="type" title="View type">
+        <option value="phase" ${fleet.type==='phase'?'selected':''}>Phase Intervals</option>
+        <option value="all"   ${fleet.type==='all'?'selected':''}>All Inspections</option>
+      </select>
+      <input class="fleet-entry-source insp-input" style="max-width:260px;" value="${fleet.dataFile || ''}" placeholder="data/fleet/dashboard.json" data-field="dataFile">
+      <button class="fleet-entry-remove" onclick="removeFleet(${fi})" title="Remove fleet">🗑</button>
+      <span class="entry-chevron">▼</span>
+    </div>
+    <div class="fleet-entry-body">
+      <div class="sec-lbl" style="margin-top:10px;">Tracked Inspections (ATA Codes)</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px;">Each row becomes a tracked inspection. The ATA match is used by the Python scripts to scrub rows from your CSV/JSON. Leave mode as 'contains' unless you need exact match.</div>
+      <div class="insp-list" id="insp-list-${fi}">${inspRows}</div>
+      <button class="btn-add-insp" onclick="addInspection(${fi})">+ Add Inspection</button>
+      <div class="sec-lbl" style="margin-top:16px;">Alert Thresholds</div>
+      <div class="thresh-row">
+        <div class="thresh-group"><div class="thresh-lbl">Critical Days</div><input class="thresh-val" type="number" value="${t.criticalDays??7}" data-thresh="criticalDays"></div>
+        <div class="thresh-group"><div class="thresh-lbl">Coming Days</div><input class="thresh-val" type="number" value="${t.comingDays??30}" data-thresh="comingDays"></div>
+        <div class="thresh-group"><div class="thresh-lbl">Critical Hrs</div><input class="thresh-val" type="number" value="${t.criticalHrs??25}" data-thresh="criticalHrs"></div>
+        <div class="thresh-group"><div class="thresh-lbl">Coming Hrs</div><input class="thresh-val" type="number" value="${t.comingHrs??100}" data-thresh="comingHrs"></div>
+        <div class="thresh-group"><div class="thresh-lbl">Comp Window Hrs</div><input class="thresh-val" type="number" value="${t.componentWindow??200}" data-thresh="componentWindow"></div>
+      </div>
+    </div>`;
+  list.appendChild(entry);
+}
+
+function toggleEntry(hdr) {
+  hdr.closest('.fleet-entry').classList.toggle('expanded');
+}
+
+function addFleetEntry() {
+  const newFleet = {
+    id: 'fleet_' + Date.now(),
+    name: 'New Fleet',
+    type: 'all',
+    dataFile: 'data/new-fleet/dashboard.json',
+    inspections: [
+      { label: 'Annual', ataMatch: 'ANNUAL', mode: 'contains' }
+    ],
+    thresholds: { criticalDays:7, comingDays:30, criticalHrs:25, comingHrs:100, componentWindow:200 }
+  };
+  CONFIG.fleets.push(newFleet);
+  renderConfigModal();
+}
+
+function removeFleet(fi) {
+  if (!confirm(`Remove fleet "${CONFIG.fleets[fi]?.name}"?`)) return;
+  CONFIG.fleets.splice(fi, 1);
+  renderConfigModal();
+}
+
+function addInspection(fi) {
+  if (!CONFIG.fleets[fi].inspections) CONFIG.fleets[fi].inspections = [];
+  CONFIG.fleets[fi].inspections.push({ label: '', ataMatch: '', mode: 'contains' });
+  renderConfigModal();
+}
+
+function removeInspection(fi, ii) {
+  CONFIG.fleets[fi].inspections.splice(ii, 1);
+  renderConfigModal();
+}
+
+function readConfigFromModal() {
+  const entries = document.querySelectorAll('.fleet-entry');
+  const fleets = [];
+  entries.forEach(entry => {
+    const fi = parseInt(entry.dataset.fi);
+    const existing = CONFIG.fleets[fi] || {};
+
+    // Read header fields
+    const name      = entry.querySelector('[data-field="name"]')?.value.trim() || 'Fleet';
+    const type      = entry.querySelector('[data-field="type"]')?.value || 'all';
+    const dataFile  = entry.querySelector('[data-field="dataFile"]')?.value.trim() || '';
+
+    // Read inspections
+    const inspRows  = entry.querySelectorAll('.insp-row');
+    const inspections = [];
+    inspRows.forEach(row => {
+      const label    = row.querySelector('[data-field="label"]')?.value.trim() || '';
+      const ataMatch = row.querySelector('[data-field="ataMatch"]')?.value.trim() || '';
+      const mode     = row.querySelector('[data-field="mode"]')?.value || 'contains';
+      if (label || ataMatch) inspections.push({ label, ataMatch, mode });
+    });
+
+    // Read thresholds
+    const threshels = entry.querySelectorAll('[data-thresh]');
+    const thresholds = { criticalDays:7, comingDays:30, criticalHrs:25, comingHrs:100, componentWindow:200 };
+    threshels.forEach(el => { thresholds[el.dataset.thresh] = parseFloat(el.value) || 0; });
+
+    fleets.push({
+      id: existing.id || ('fleet_' + Date.now() + fi),
+      name, type, dataFile, inspections, thresholds
+    });
+  });
+  return { fleets };
+}
+
+function saveConfig() {
+  CONFIG = readConfigFromModal();
+  saveConfigToStorage(CONFIG);
+  closeConfig();
+  showToast('Config saved — reloading data…');
+  FLEET_DATA = {};
+  init();
+}
+
+function exportConfig() {
+  const cfg = readConfigFromModal();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fleet_config.json';
+  a.click();
+  showToast('Config exported as fleet_config.json');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+async function init() {
+  document.getElementById('ftr-right').textContent = 'Loading…';
+  const errs = await loadAllFleets();
+  renderAllFleets();
+  renderSidebar();
+  document.getElementById('ftr-right').textContent = 'Last update: ' + new Date().toLocaleTimeString();
+  if (errs.length) {
+    errs.forEach(e => console.warn('[Fleet Load]', e));
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('config-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfig();
+});
+
+init();
+</script>
+</body>
+</html>
