@@ -452,9 +452,11 @@ tbody tr:last-child td { border-bottom: none; }
 .bases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px; }
 .base-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .base-card.occ { border-color: rgba(0,230,118,0.4); box-shadow: 0 0 0 1px rgba(0,230,118,0.1); }
+.base-card.away { border-color: rgba(255,171,0,0.4); box-shadow: 0 0 0 1px rgba(255,171,0,0.1); }
 .base-hdr { padding: 10px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .base-name { font-family: var(--sans); font-weight: 900; font-size: 16px; letter-spacing: 1px; color: var(--heading); }
 .base-cap { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.base-meta { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
 .base-body { padding: 14px; min-height: 70px; }
 .base-ac { display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(0,230,118,0.06); border: 1px solid rgba(0,230,118,0.18); border-radius: 3px; margin-bottom: 7px; }
 .base-ac-tail { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--heading); }
@@ -1632,7 +1634,7 @@ function buildComponentsTab(fleet, data, items) {
 // ─── FLIGHT HOURS TAB ─────────────────────────────────────────────────
 function buildHoursTab(fleet, data) {
   if (!data) return '<div class="empty-state">No data available.</div>';
-  const history = data.flight_hours_history || {};
+  const history = data.flight_hours_history || data.hours_history || {};
   const aircraft = data.aircraft || {};
   const tails = Object.keys(aircraft).sort();
 
@@ -1646,6 +1648,8 @@ function buildHoursTab(fleet, data) {
     const dates = Object.keys(tailHistory).sort();
 
     const chartId = `hrs-chart-${fleet.id}-${tail.replace(/\W/g,'')}`;
+    const weeklyHrs = calcFlyingHours(tailHistory, 7);
+    const monthlyHrs = calcFlyingHours(tailHistory, 30);
 
     let chartHtml = dates.length >= 2
       ? `<canvas class="mini-chart" id="${chartId}" data-dates='${JSON.stringify(dates.slice(-10).map(d=>d.slice(5)))}' data-hours='${JSON.stringify(dates.slice(-10).map(d=>tailHistory[d].hours))}'></canvas>`
@@ -1660,11 +1664,11 @@ function buildHoursTab(fleet, data) {
       <div class="hrs-card-body">
         <div class="hrs-row">
           <div class="hrs-lbl">Last 7 Days</div>
-          <div class="hrs-val">—</div>
+          <div class="hrs-val">${weeklyHrs.toFixed(1)} hrs</div>
         </div>
         <div class="hrs-row">
           <div class="hrs-lbl">Last 30 Days</div>
-          <div class="hrs-val">—</div>
+          <div class="hrs-val">${monthlyHrs.toFixed(1)} hrs</div>
         </div>
         ${chartHtml}
       </div>
@@ -1674,12 +1678,36 @@ function buildHoursTab(fleet, data) {
   return `<div class="sec-lbl">Flight Hours by Aircraft</div><div class="hrs-grid">${cards}</div>`;
 }
 
+function calcFlyingHours(tailHistory, daysWindow = 7) {
+  const entries = Object.entries(tailHistory || {})
+    .filter(([date, row]) => row && row.hours !== undefined && row.hours !== null && !Number.isNaN(Number(row.hours)))
+    .map(([date, row]) => ({ date, hours: Number(row.hours) }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (entries.length < 2) return 0;
+
+  const lastDate = new Date(entries[entries.length - 1].date + 'T00:00:00Z');
+  const windowStart = new Date(lastDate);
+  windowStart.setUTCDate(windowStart.getUTCDate() - daysWindow);
+
+  let total = 0;
+  for (let i = 1; i < entries.length; i++) {
+    const prev = entries[i - 1];
+    const curr = entries[i];
+    const currDate = new Date(curr.date + 'T00:00:00Z');
+    if (currDate < windowStart) continue;
+    const delta = curr.hours - prev.hours;
+    if (delta > 0 && delta < 100) total += delta;
+  }
+  return total;
+}
+
 // ─── BASES TAB ────────────────────────────────────────────────────────
 function buildBasesTab(fleet, data) {
-  if (!data?.base_assignments) {
+  const ba = data?.base_assignments || data?.adsb_tracker || data?.adsb_tracking;
+  if (!ba) {
     return '<div class="empty-state">No base assignment data in JSON. Run the base assignment generator and include <code>base_assignments</code> in your dashboard JSON.</div>';
   }
-  const ba = data.base_assignments;
   const assignments = ba.assignments || {};
   const basesInfo   = ba.bases || {};
 
@@ -1689,7 +1717,13 @@ function buildBasesTab(fleet, data) {
     const binfo = basesInfo[bid];
     const bdata = assignments[bid] || { aircraft:[], status:'available' };
     const acs   = bdata.aircraft || [];
-    const occ   = acs.length > 0;
+    const occ   = acs.some(a => a.at_base !== false);
+    const away  = acs.length > 0 && !occ;
+    const statusLabel = occ ? 'AT BASE' : 'AWAY FROM BASE';
+    const statusClass = occ ? 'sb-at' : 'sb-away';
+    const coords = (binfo.lat !== undefined && binfo.lon !== undefined)
+      ? `${Number(binfo.lat).toFixed(4)}, ${Number(binfo.lon).toFixed(4)}`
+      : null;
 
     let acHTML = acs.length ? acs.map(a => `
       <div class="base-ac">
@@ -1699,10 +1733,16 @@ function buildBasesTab(fleet, data) {
       </div>`).join('') : '<div class="base-empty">No aircraft assigned</div>';
 
     baseCards += `
-    <div class="base-card ${occ ? 'occ' : ''}">
+    <div class="base-card ${occ ? 'occ' : away ? 'away' : ''}">
       <div class="base-hdr">
-        <div class="base-name">${binfo.name || bid}</div>
-        <div class="base-cap">${acs.length} aircraft</div>
+        <div>
+          <div class="base-name">${binfo.name || bid}</div>
+          <div class="base-meta">${coords ? `LAT/LON ${coords}<br>` : ''}Radius ${(binfo.radius_miles || 5)} mi</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="base-cap">${acs.length} aircraft</div>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
       </div>
       <div class="base-body">${acHTML}</div>
     </div>`;
