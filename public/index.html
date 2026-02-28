@@ -937,34 +937,43 @@ function defaultConfig() {
         type: 'phase',        // 'phase' = interval columns, 'all' = all inspections list
         dataFile: 'data/aw109sp/dashboard.json',
         inspections: [
-          { label: '50 Hr',   ataMatch: '05 1000',       mode: 'contains' },
-          { label: '100 Hr',  ataMatch: '64 01[273]',    mode: 'contains' },
-          { label: '200 Hr',  ataMatch: '05 1005',       mode: 'contains' },
-          { label: '400 Hr',  ataMatch: '05 1010',       mode: 'contains' },
-          { label: '800 Hr',  ataMatch: '05 1015',       mode: 'contains' },
-          { label: '2400 Hr', ataMatch: '62 11[373]',    mode: 'contains' },
-          { label: '3200 Hr', ataMatch: '05 1020',       mode: 'contains' },
+          { label: '50 Hr',   ataMatch: '1000',    mode: 'strip-chapter' },
+          { label: '100 Hr',  ataMatch: '01[273]', mode: 'strip-chapter' },
+          { label: '200 Hr',  ataMatch: '1005',    mode: 'strip-chapter' },
+          { label: '400 Hr',  ataMatch: '1010',    mode: 'strip-chapter' },
+          { label: '800 Hr',  ataMatch: '1015',    mode: 'strip-chapter' },
+          { label: '2400 Hr', ataMatch: '11[373]', mode: 'strip-chapter' },
+          { label: '3200 Hr', ataMatch: '1020',    mode: 'strip-chapter' },
         ],
         thresholds: { criticalDays: 7, comingDays: 30, criticalHrs: 25, comingHrs: 100, componentWindow: 200 }
       },
       {
         id: 'bell407',
         name: 'Bell 407',
-        type: 'all',
+        type: 'phase',
         dataFile: 'data/bell407/dashboard.json',
-        inspections: [
-          { label: '12 Month',           ataMatch: '12MO-INSPECTION',           mode: 'contains' },
-          { label: '24 Month',           ataMatch: '24MO-INSPECTION',           mode: 'contains' },
-          { label: '300HR/12M Airframe', ataMatch: '300HR-PERIODIC INSPECTION', mode: 'contains' },
-          { label: '300HR/12M Engine',   ataMatch: '72/300',                    mode: 'exact'    },
-          { label: 'IFR Certs 91.411',   ataMatch: '91.411',                    mode: 'contains' },
-          { label: 'IFR Certs 91.413',   ataMatch: '91.413',                    mode: 'contains' },
-          { label: 'MR Mast Interim',    ataMatch: '11-20 INTERIM',             mode: 'contains' },
-          { label: 'Freewheel Interim',  ataMatch: '13-11 INTERIM',             mode: 'contains' },
-          { label: 'Transmission',       ataMatch: '21-10 INTERIM',             mode: 'contains' },
-          { label: 'TRGB Interim',       ataMatch: '10-11 INTERIM',             mode: 'contains' },
-          { label: 'Spring Link',        ataMatch: '20-12 INTERIM',             mode: 'contains' },
+        inspection_groups: [
+          {
+            label: 'Phase Inspections',
+            inspections: [
+              { label: '12 Month',           ataMatch: '12MO-INSPECTION', mode: 'strip-chapter' },
+              { label: '24 Month',           ataMatch: '24MO-INSPECTION', mode: 'strip-chapter' },
+              { label: '300HR/12M Airframe', ataMatch: '300HR-PERIODIC',  mode: 'strip-chapter' },
+              { label: '300HR/12M Engine',   ataMatch: '72/300',          mode: 'strip-chapter' },
+            ]
+          },
+          {
+            label: 'Interim Inspections',
+            inspections: [
+              { label: 'MR Mast Interim',      ataMatch: '11-20 INTERIM', mode: 'strip-chapter' },
+              { label: 'Freewheel Interim',    ataMatch: '13-11 INTERIM', mode: 'strip-chapter' },
+              { label: 'Transmission Interim', ataMatch: '21-10 INTERIM', mode: 'strip-chapter' },
+              { label: 'TRGB Interim',         ataMatch: '10-11 INTERIM', mode: 'strip-chapter' },
+              { label: 'Spring Link Interim',  ataMatch: '20-12 INTERIM', mode: 'strip-chapter' },
+            ]
+          }
         ],
+        inspections: [],
         thresholds: { criticalDays: 7, comingDays: 30, criticalHrs: 25, comingHrs: 100, componentWindow: 200 }
       }
     ]
@@ -1129,22 +1138,21 @@ function getItems(data, fleetCfg) {
 // Get phase-inspection interval data (AW109SP style)
 function getIntervals(data, fleetCfg) {
   if (!data || !data.aircraft || Array.isArray(data.aircraft)) return {};
-  // data.aircraft is object keyed by tail
+  // For phase fleets the builder already tagged items with tracked_label and group.
+  // We just index them directly rather than re-matching ATA strings.
   const result = {};
   for (const [tail, ac] of Object.entries(data.aircraft)) {
     if (!result[tail]) result[tail] = { airframe_hours: ac.airframe_hours, intervals: {} };
     for (const it of (ac.items || [])) {
-      // Match against configured inspections
-      for (const insp of fleetCfg.inspections) {
-        if (ataMatches(it.ata, insp)) {
-          if (!result[tail].intervals[insp.label]) {
-            result[tail].intervals[insp.label] = {
-              rem_hrs: it.remaining_hours,
-              rem_days: it.remaining_days,
-              status: it.status || it.next_due_status || '',
-            };
-          }
-        }
+      const key = it.tracked_label || it.label;
+      if (!key) continue;
+      if (!result[tail].intervals[key]) {
+        result[tail].intervals[key] = {
+          rem_hrs:  it.remaining_hours,
+          rem_days: it.remaining_days,
+          status:   it.status || it.next_due_status || '',
+          group:    it.group || null,
+        };
       }
     }
   }
@@ -1153,10 +1161,17 @@ function getIntervals(data, fleetCfg) {
 
 function ataMatches(ataVal, inspCfg) {
   if (!ataVal) return false;
-  const a = str(ataVal).toUpperCase().replace(/\s*([-./])\s*/g, '$1').replace(/\s+/g,' ').trim();
-  const t = str(inspCfg.ataMatch).toUpperCase().replace(/\s*([-./])\s*/g, '$1').replace(/\s+/g,' ').trim();
+  const norm = s => String(s || '').toUpperCase()
+    .replace(/\s*([-./])\s*/g, '$1')
+    .replace(/\s+/g,' ')
+    .replace(/(?<=[A-Z0-9])[./](?=[A-Z])/g, '-')
+    .trim();
+  const stripChapter = s => s.replace(/^\d{2}\s+/, '').trim();
+  const a = norm(ataVal);
+  const t = norm(inspCfg.ataMatch);
   if (!a || !t) return false;
   if (inspCfg.mode === 'exact') return a === t || a.split(/\s+/).includes(t);
+  if (inspCfg.mode === 'strip-chapter') return stripChapter(a).includes(stripChapter(t));
   return a.includes(t);
 }
 
@@ -1349,40 +1364,22 @@ function buildMaintTab(fleet, data, items) {
 }
 
 function buildPhaseTable(fleet, data) {
-  const labels = fleet.inspections.map(i => i.label);
   const intervals = getIntervals(data, fleet);
   const thresh = fleet.thresholds;
-
-  // 200hr chart data
-  const chart200Label = labels.find(l => l.includes('200'));
-  let chartRows = [];
-
   const tails = Object.keys(intervals).sort();
 
-  let headerCols = labels.map(l => `<th class="tc">${l}</th>`).join('');
-  let tableRows = '';
+  // Determine if this fleet uses grouped inspections
+  const groups = (fleet.inspection_groups && fleet.inspection_groups.length)
+    ? fleet.inspection_groups
+    : [{ label: null, inspections: fleet.inspections }];
 
-  tails.forEach(tail => {
-    const ac = intervals[tail];
-    const ah = ac.airframe_hours;
-    let cells = '';
-    labels.forEach((lbl, idx) => {
-      const iv = ac.intervals[lbl];
-      cells += `<td class="tc">${fmtIntervalCell(iv, thresh)}</td>`;
-      if (lbl === chart200Label && iv?.rem_hrs != null) {
-        chartRows.push([tail, iv.rem_hrs]);
-      }
-    });
-    tableRows += `<tr><td><div class="tail-num">${tail}</div><div class="ah-sub">${ah ? ah+' TT' : ''}</div></td>${cells}</tr>`;
-  });
+  // Pick a label for the hours-remaining chart (prefer one with a number like '200' or '300')
+  const allLabels = groups.flatMap(g => g.inspections.map(i => i.label));
+  const chart200Label = allLabels.find(l => /\d/.test(l)) || allLabels[0];
+  let chartRows = [];
 
-  // Sort chart rows
-  chartRows.sort((a,b) => a[1]-b[1]);
-  const chartLabels = chartRows.map(r => r[0]);
-  const chartVals   = chartRows.map(r => r[1].toFixed(2));
-  const chartId = `chart-${fleet.id}-phase`;
-
-  let filterRow = `
+  // Build filter bar (shared across all tables for this fleet)
+  const filterRow = `
   <div class="chip-row">
     <button class="chip active" onclick="filterPhaseTable('${fleet.id}', 'all', this)">All</button>
     <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'overdue', this)">Overdue</button>
@@ -1391,19 +1388,53 @@ function buildPhaseTable(fleet, data) {
     <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'ok', this)">OK</button>
   </div>`;
 
-  return `
-  <div class="chart-card">
-    <div class="chart-title">${chart200Label || labels[2] || 'Phase'} Inspection — Hours Remaining (Sorted)</div>
-    <canvas id="${chartId}" data-labels='${JSON.stringify(chartLabels)}' data-values='${JSON.stringify(chartVals)}'></canvas>
-  </div>
-  <div class="sec-lbl">Phase Inspections — Hours Remaining</div>
-  ${filterRow}
+  // Build one <table> per group
+  let tables = '';
+  groups.forEach((grp, gi) => {
+    const labels = grp.inspections.map(i => i.label);
+    const headerCols = labels.map(l => `<th class="tc">${l}</th>`).join('');
+    const tbodyId = `phase-tbody-${fleet.id}-${gi}`;
+    let tableRows = '';
+
+    tails.forEach(tail => {
+      const ac = intervals[tail];
+      const ah = ac.airframe_hours;
+      let cells = '';
+      labels.forEach(lbl => {
+        const iv = ac.intervals[lbl];
+        cells += `<td class="tc">${fmtIntervalCell(iv, thresh)}</td>`;
+        if (lbl === chart200Label && iv?.rem_hrs != null) {
+          chartRows.push([tail, iv.rem_hrs]);
+        }
+      });
+      tableRows += `<tr><td><div class="tail-num">${tail}</div><div class="ah-sub">${ah ? ah+' TT' : ''}</div></td>${cells}</tr>`;
+    });
+
+    const sectionLabel = grp.label || 'Phase Inspections';
+    tables += `
+  <div class="sec-lbl" style="margin-top:${gi > 0 ? '24px' : '0'}">${sectionLabel}</div>
   <div class="tbl-wrap">
     <table>
       <thead><tr><th>Aircraft</th>${headerCols}</tr></thead>
-      <tbody id="phase-tbody-${fleet.id}">${tableRows}</tbody>
+      <tbody id="${tbodyId}" class="phase-tbody-${fleet.id}">${tableRows}</tbody>
     </table>
   </div>`;
+  });
+
+  // Hours-remaining bar chart
+  chartRows.sort((a,b) => a[1]-b[1]);
+  const chartLabels = chartRows.map(r => r[0]);
+  const chartVals   = chartRows.map(r => r[1].toFixed(2));
+  const chartId = `chart-${fleet.id}-phase`;
+
+  return `
+  <div class="chart-card">
+    <div class="chart-title">${chart200Label || 'Phase'} Inspection — Hours Remaining (Sorted)</div>
+    <canvas id="${chartId}" data-labels='${JSON.stringify(chartLabels)}' data-values='${JSON.stringify(chartVals)}'></canvas>
+  </div>
+  ${filterRow}
+  ${tables}`;
+}
 }
 
 function fmtIntervalCell(iv, thresh) {
@@ -1437,7 +1468,7 @@ function setFleetFilter(fleetId, sev, btn) {
 function filterPhaseTable(fleetId, sev, btn) {
   btn.closest('.chip-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll(`#phase-tbody-${fleetId} tr`).forEach(tr => {
+  document.querySelectorAll(`.phase-tbody-${fleetId} tr`).forEach(tr => {
     if (sev === 'all') { tr.style.display = ''; return; }
     const badges = tr.querySelectorAll('.hb');
     let show = false;
