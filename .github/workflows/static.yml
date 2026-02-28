@@ -38,14 +38,8 @@ jobs:
         run: mkdir -p dist/data
 
       # ── Optional: fetch positions ─────────────────────────────────────
-      - name: Fetch aircraft positions (if API key set)
-        env:
-          FLIGHTAWARE_API_KEY: ${{ secrets.FLIGHTAWARE_API_KEY }}
-        if: ${{ env.FLIGHTAWARE_API_KEY != '' }}
-        run: |
-          python scripts/flightaware_fetcher.py \
-            --config fleet_config.json \
-            --data data || true
+      - name: Fetch aircraft positions (ADSB.lol)
+        run: python scripts/fetch_positions.py --config fleet_config.json --data data --dist dist/data || true
 
       # ── Build all fleet dashboards ────────────────────────────────────
       - name: Build fleet dashboards
