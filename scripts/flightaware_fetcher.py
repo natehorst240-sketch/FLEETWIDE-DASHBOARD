@@ -58,8 +58,15 @@ FA_RATE_LIMIT_DELAY = 1.1
 FLEET_AIRCRAFT = {
     "aw109sp": [
         # Replace with your actual AW109SP tail numbers
-        "N109IH",
-        "N109SP",
+        "N251HC",
+        "N261HC",
+        "N271HC",
+        "N281HC",
+        "N291HC",
+        "N431HC",
+        "N531HC",
+        "N631HC",
+        "N731HC",
         # ... add all AW109SP tails
     ],
     "bell407": [
@@ -72,11 +79,55 @@ FLEET_AIRCRAFT = {
 }
 
 BASES = {
-    "SLC":   {"name": "Intermountain Medical Center",  "lat": 40.6598, "lon": -111.8982, "radius_nm": 3},
-    "LDS":   {"name": "LDS Hospital",                  "lat": 40.7747, "lon": -111.8783, "radius_nm": 3},
-    "MCKAY": {"name": "McKay-Dee Hospital",             "lat": 41.2205, "lon": -111.9663, "radius_nm": 3},
-    "UTAH":  {"name": "Utah Valley Hospital",           "lat": 40.2338, "lon": -111.6585, "radius_nm": 3},
-    "AMER":  {"name": "American Fork Hospital",         "lat": 40.3757, "lon": -111.7963, "radius_nm": 3},
+  "LOGAN": {
+      "name": "Logan",
+      "lat": 41.7912,
+      "lon": -111.8522,
+      "radius_miles": 5
+    },
+    "MCKAY": {
+      "name": "McKay",
+      "lat": 41.2545,
+      "lon": -112.0126,
+      "radius_miles": 5
+    },
+    "IMED": {
+      "name": "IMed",
+      "lat": 40.2338,
+      "lon": -111.6585,
+      "radius_miles": 5
+    },
+    "PROVO": {
+      "name": "Provo",
+      "lat": 40.2192,
+      "lon": -111.7233,
+      "radius_miles": 5
+    },
+    "ROOSEVELT": {
+      "name": "Roosevelt",
+      "lat": 40.2765,
+      "lon": -110.0518,
+      "radius_miles": 5
+    },
+    "CEDAR_CITY": {
+      "name": "Cedar City",
+      "lat": 37.701,
+      "lon": -113.0989,
+      "radius_miles": 5
+    },
+    "ST_GEORGE": {
+      "name": "St George",
+      "lat": 37.0365,
+      "lon": -113.5101,
+      "radius_miles": 5
+    },
+    "KSLC": {
+      "name": "KSLC",
+      "lat": 40.7884,
+      "lon": -111.9778,
+      "radius_miles": 10
+    }
+  },
 }
 
 
