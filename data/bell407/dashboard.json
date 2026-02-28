@@ -1,0 +1,675 @@
+{
+  "generated_at_utc": "2026-02-28T01:49:06Z",
+  "fleet": "Bell 407",
+  "fleet_id": "bell407",
+  "fleet_type": "phase",
+  "aircraft_count": 24,
+  "config": {
+    "inspections": [],
+    "inspection_groups": [
+      {
+        "label": "Phase Inspections",
+        "inspections": [
+          {
+            "label": "12 Month",
+            "ataMatch": "12MO-INSPECTION",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "24 Month",
+            "ataMatch": "24MO-INSPECTION",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "300HR/12M Airframe",
+            "ataMatch": "300HR-PERIODIC",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "300HR/12M Engine",
+            "ataMatch": "72/300",
+            "mode": "strip-chapter"
+          }
+        ]
+      },
+      {
+        "label": "Interim Inspections",
+        "inspections": [
+          {
+            "label": "MR Mast Interim",
+            "ataMatch": "11-20 INTERIM",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "Freewheel Interim",
+            "ataMatch": "13-11 INTERIM",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "Transmission Interim",
+            "ataMatch": "21-10 INTERIM",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "TRGB Interim",
+            "ataMatch": "10-11 INTERIM",
+            "mode": "strip-chapter"
+          },
+          {
+            "label": "Spring Link Interim",
+            "ataMatch": "20-12 INTERIM",
+            "mode": "strip-chapter"
+          }
+        ]
+      }
+    ],
+    "thresholds": {
+      "criticalDays": 7,
+      "comingDays": 30,
+      "criticalHrs": 25,
+      "comingHrs": 100,
+      "componentWindow": 200
+    }
+  },
+  "summary": {
+    "OVERDUE": 1,
+    "CRITICAL": 17,
+    "COMING_DUE": 6,
+    "OK": 0,
+    "total_tracked": 24
+  },
+  "aircraft": {
+    "N407JM": {
+      "airframe_hours": 5659.5,
+      "airframe_report_date": "2026-02-26",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": -26.0,
+          "next_due_status": "Within Tolerance",
+          "status": "OVERDUE",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        }
+      ]
+    },
+    "N307KH": {
+      "airframe_hours": 22896.4,
+      "airframe_report_date": "2026-02-25",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 2.0,
+          "next_due_status": "Coming Due",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        },
+        {
+          "label": "24 Month",
+          "group": "Phase Inspections",
+          "ata": "05 24MO. INSPECTION",
+          "description": "24 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 2.0,
+          "next_due_status": "Coming Due",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "24 Month",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 66.1,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        }
+      ]
+    },
+    "N407FC": {
+      "airframe_hours": 14611.7,
+      "airframe_report_date": "2026-02-06",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": -15.3,
+          "remaining_days": 20.0,
+          "next_due_status": "Within Tolerance",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        }
+      ]
+    },
+    "N407CN": {
+      "airframe_hours": 4850.8,
+      "airframe_report_date": "2026-02-02",
+      "items": []
+    },
+    "N407LP": {
+      "airframe_hours": 4097.8,
+      "airframe_report_date": "2026-02-25",
+      "items": [
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 43.1,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407FM": {
+      "airframe_hours": 2449.1,
+      "airframe_report_date": "2026-02-24",
+      "items": []
+    },
+    "N466GH": {
+      "airframe_hours": 2943.4,
+      "airframe_report_date": "2026-02-26",
+      "items": []
+    },
+    "N407TH": {
+      "airframe_hours": 8476.9,
+      "airframe_report_date": "2026-02-26",
+      "items": [
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 176.2,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N39KM": {
+      "airframe_hours": 3265.0,
+      "airframe_report_date": "2026-02-24",
+      "items": [
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 43.0,
+          "remaining_days": 13.0,
+          "next_due_status": "10+ Days",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407NW": {
+      "airframe_hours": 1640.5,
+      "airframe_report_date": "2026-02-26",
+      "items": [
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 70.5,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 70.5,
+          "remaining_days": 11.0,
+          "next_due_status": "10+ Days",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407CH": {
+      "airframe_hours": 17361.4,
+      "airframe_report_date": "2026-02-17",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        }
+      ]
+    },
+    "N469JX": {
+      "airframe_hours": 3369.2,
+      "airframe_report_date": "2026-02-26",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 170.9,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 170.9,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407CZ": {
+      "airframe_hours": 2309.2,
+      "airframe_report_date": "2026-02-24",
+      "items": []
+    },
+    "N862YB": {
+      "airframe_hours": 2105.5,
+      "airframe_report_date": "2026-02-26",
+      "items": [
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 192.1,
+          "remaining_days": 16.0,
+          "next_due_status": "10+ Days",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 192.1,
+          "remaining_days": 16.0,
+          "next_due_status": "10+ Days",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407LF": {
+      "airframe_hours": 5148.1,
+      "airframe_report_date": "2026-02-25",
+      "items": []
+    },
+    "N407CP": {
+      "airframe_hours": 9966.1,
+      "airframe_report_date": "2026-02-24",
+      "items": []
+    },
+    "N407RU": {
+      "airframe_hours": 1759.4,
+      "airframe_report_date": "2026-02-23",
+      "items": []
+    },
+    "N407TK": {
+      "airframe_hours": 5168.2,
+      "airframe_report_date": "2026-02-23",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 88.3,
+          "remaining_days": 5.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        },
+        {
+          "label": "TRGB Interim",
+          "group": "Interim Inspections",
+          "ata": "65 10-11 INTERIM",
+          "description": "(RII) TAIL ROTOR GEARBOX INTERIM INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "TRGB Interim",
+          "rii": true
+        }
+      ]
+    },
+    "N407PW": {
+      "airframe_hours": 1108.5,
+      "airframe_report_date": "2026-02-24",
+      "items": [
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 65.6,
+          "remaining_days": 2.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        },
+        {
+          "label": "300HR/12M Engine",
+          "group": "Phase Inspections",
+          "ata": "72 72/300",
+          "description": "300 HOUR/12 MONTH ENGINE INSPECTION",
+          "remaining_hours": 65.6,
+          "remaining_days": 2.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "300HR/12M Engine",
+          "rii": false
+        }
+      ]
+    },
+    "N407BY": {
+      "airframe_hours": 1063.1,
+      "airframe_report_date": "2026-02-25",
+      "items": []
+    },
+    "N407ZM": {
+      "airframe_hours": 5300.6,
+      "airframe_report_date": "2026-02-25",
+      "items": [
+        {
+          "label": "12 Month",
+          "group": "Phase Inspections",
+          "ata": "05 12MO- INSPECTION",
+          "description": "12 MONTH AIRFRAME INSPECTION",
+          "remaining_hours": null,
+          "remaining_days": 4.0,
+          "next_due_status": "10+ Days",
+          "status": "CRITICAL",
+          "tracked": true,
+          "tracked_label": "12 Month",
+          "rii": false
+        }
+      ]
+    },
+    "N407MZ": {
+      "airframe_hours": 2316.4,
+      "airframe_report_date": "2026-02-26",
+      "items": []
+    },
+    "N407SL": {
+      "airframe_hours": 1943.5,
+      "airframe_report_date": "2026-02-22",
+      "items": [
+        {
+          "label": "300HR/12M Airframe",
+          "group": "Phase Inspections",
+          "ata": "05 300HR- PERIODIC INSPECTION",
+          "description": "300 HOUR /12 MONTH PERIODIC AIRFRAME INSPECTION",
+          "remaining_hours": 26.3,
+          "remaining_days": 16.0,
+          "next_due_status": "10+ Days",
+          "status": "COMING_DUE",
+          "tracked": true,
+          "tracked_label": "300HR/12M Airframe",
+          "rii": false
+        }
+      ]
+    },
+    "N7160V": {
+      "airframe_hours": 10547.6,
+      "airframe_report_date": "2026-02-25",
+      "items": []
+    }
+  },
+  "flight_hours_history": {
+    "N407JM": {
+      "2026-02-26": {
+        "hours": 5659.5,
+        "date": "2026-02-26"
+      }
+    },
+    "N307KH": {
+      "2026-02-26": {
+        "hours": 22896.4,
+        "date": "2026-02-26"
+      }
+    },
+    "N407FC": {
+      "2026-02-26": {
+        "hours": 14611.7,
+        "date": "2026-02-26"
+      }
+    },
+    "N407CN": {
+      "2026-02-26": {
+        "hours": 4850.8,
+        "date": "2026-02-26"
+      }
+    },
+    "N407LP": {
+      "2026-02-26": {
+        "hours": 4097.8,
+        "date": "2026-02-26"
+      }
+    },
+    "N407FM": {
+      "2026-02-26": {
+        "hours": 2449.1,
+        "date": "2026-02-26"
+      }
+    },
+    "N466GH": {
+      "2026-02-26": {
+        "hours": 2943.4,
+        "date": "2026-02-26"
+      }
+    },
+    "N407TH": {
+      "2026-02-26": {
+        "hours": 8476.9,
+        "date": "2026-02-26"
+      }
+    },
+    "N39KM": {
+      "2026-02-26": {
+        "hours": 3265.0,
+        "date": "2026-02-26"
+      }
+    },
+    "N407NW": {
+      "2026-02-26": {
+        "hours": 1640.5,
+        "date": "2026-02-26"
+      }
+    },
+    "N407CH": {
+      "2026-02-26": {
+        "hours": 17361.4,
+        "date": "2026-02-26"
+      }
+    },
+    "N469JX": {
+      "2026-02-26": {
+        "hours": 3369.2,
+        "date": "2026-02-26"
+      }
+    },
+    "N407CZ": {
+      "2026-02-26": {
+        "hours": 2309.2,
+        "date": "2026-02-26"
+      }
+    },
+    "N862YB": {
+      "2026-02-26": {
+        "hours": 2105.5,
+        "date": "2026-02-26"
+      }
+    },
+    "N407LF": {
+      "2026-02-26": {
+        "hours": 5148.1,
+        "date": "2026-02-26"
+      }
+    },
+    "N407CP": {
+      "2026-02-26": {
+        "hours": 9966.1,
+        "date": "2026-02-26"
+      }
+    },
+    "N407RU": {
+      "2026-02-26": {
+        "hours": 1759.4,
+        "date": "2026-02-26"
+      }
+    },
+    "N407TK": {
+      "2026-02-26": {
+        "hours": 5168.2,
+        "date": "2026-02-26"
+      }
+    },
+    "N407PW": {
+      "2026-02-26": {
+        "hours": 1108.5,
+        "date": "2026-02-26"
+      }
+    },
+    "N407BY": {
+      "2026-02-26": {
+        "hours": 1063.1,
+        "date": "2026-02-26"
+      }
+    },
+    "N407ZM": {
+      "2026-02-26": {
+        "hours": 5300.6,
+        "date": "2026-02-26"
+      }
+    },
+    "N407MZ": {
+      "2026-02-26": {
+        "hours": 2316.4,
+        "date": "2026-02-26"
+      }
+    },
+    "N407SL": {
+      "2026-02-26": {
+        "hours": 1943.5,
+        "date": "2026-02-26"
+      }
+    },
+    "N7160V": {
+      "2026-02-26": {
+        "hours": 10547.6,
+        "date": "2026-02-26"
+      }
+    }
+  }
+}
