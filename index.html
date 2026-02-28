@@ -985,29 +985,7 @@ function defaultConfig() {
 function loadConfig() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.fleets)) {
-        return {
-          fleets: parsed.fleets
-            .filter(f => f && typeof f === 'object')
-            .map((f, i) => ({
-              id: str(f.id || `fleet_${i}`),
-              name: str(f.name || `Fleet ${i + 1}`),
-              type: (f.type === 'phase' || f.type === 'all') ? f.type : 'all',
-              dataFile: str(f.dataFile || ''),
-              inspections: Array.isArray(f.inspections) ? f.inspections : [],
-              thresholds: {
-                criticalDays: Number(f.thresholds?.criticalDays ?? 7),
-                comingDays: Number(f.thresholds?.comingDays ?? 30),
-                criticalHrs: Number(f.thresholds?.criticalHrs ?? 25),
-                comingHrs: Number(f.thresholds?.comingHrs ?? 100),
-                componentWindow: Number(f.thresholds?.componentWindow ?? 200),
-              }
-            }))
-        };
-      }
-    }
+    if (raw) return JSON.parse(raw);
   } catch(e) {}
   return defaultConfig();
 }
@@ -1112,6 +1090,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1137,6 +1117,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1159,6 +1141,8 @@ function getItems(data, fleetCfg) {
       tracked: it.tracked,
       tracked_label: it.tracked_label,
       rii: it.rii || false,
+      item_type: it.item_type || '',
+      requirement_type: it.requirement_type || it.requirement || '',
     }));
   }
 
@@ -1579,7 +1563,7 @@ function buildComponentsTab(fleet, data, items) {
   const thresh = fleet.thresholds;
   const win = thresh.componentWindow || 200;
 
-  // Filter to component-style items (PART or retirement keywords in inspection name)
+  // Filter to component-style items (PART or retirement keywords in inspection/requirement text)
   const retKw = ['RETIRE','OVERHAUL','DISCARD','LIFE LIMIT','TBO','REPLACEMENT','REPLACE','CHANGE OIL','NOZZLE','BATTERY','CARTRIDGE','BELT','FILTER'];
   const compItems = items.filter(it => {
     const d = numVal(it.remaining_days);
