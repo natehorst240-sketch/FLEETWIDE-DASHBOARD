@@ -29,6 +29,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
+import pandas as pd
+
+
 # ─── COLUMN INDEX MAP (CAMP export, 0-based) ──────────────────────────────────
 # Adjust these if your CSV export column order differs.
 COLS = {
@@ -38,7 +41,6 @@ COLS = {
     "ata":          5,
     "equip_hrs":    7,
     "item_type":   11,
-    "requirement": 12,
     "disposition": 13,
     "desc":        15,
     "interval_hrs":30,
@@ -86,12 +88,11 @@ def parse_date(val: Any) -> Optional[str]:
             return datetime.strptime(s, fmt).date().isoformat()
         except ValueError:
             pass
-    # Handle ISO datetimes like "2025-01-15T12:30:00" or with trailing Z.
-    iso_candidate = s[:-1] + "+00:00" if s.endswith("Z") else s
     try:
-        dt = datetime.fromisoformat(iso_candidate)
-        return dt.date().isoformat()
-    except ValueError:
+        dt = pd.to_datetime(s, errors="coerce")
+        if not pd.isna(dt):
+            return dt.date().isoformat()
+    except Exception:
         pass
     return None
 
@@ -191,11 +192,9 @@ def urgency_sort_key(item: dict) -> tuple:
     return (bucket, sub)
 
 
-def has_retirement_kw(desc: Any, requirement: Any = None) -> bool:
+def has_retirement_kw(desc: Any) -> bool:
     d = str(desc).upper()
-    r = str(requirement).upper()
-    text = f"{d} {r}"
-    return any(kw in text for kw in RETIREMENT_KW)
+    return any(kw in d for kw in RETIREMENT_KW)
 
 
 # ─── CSV PARSING ──────────────────────────────────────────────────────────────
@@ -259,13 +258,11 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 "airframe_report_date": rdt,
                 "items": [],
                 "_phase": {},          # temp for phase-interval dedup
-                "_components": [],     # temp for component retirement/overhaul rows
             }
 
         ata_text  = row[COLS["ata"]].strip()  if row[COLS["ata"]]  else ""
         item_type = row[COLS["item_type"]].strip().upper() if row[COLS["item_type"]] else ""
         desc      = row[COLS["desc"]].strip() if row[COLS["desc"]] else ""
-        req_type  = row[COLS["requirement"]].strip() if row[COLS["requirement"]] else ""
         rem_hrs   = safe_float(row[COLS["rem_hrs"]])
         rem_days  = safe_float(row[COLS["rem_days"]])
         status_raw= row[COLS["status"]].strip() if row[COLS["status"]] else ""
@@ -310,7 +307,7 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     break
 
             # Include if tracked OR if it's a component-style item within window
-            is_comp = has_retirement_kw(desc, req_type)
+            is_comp = has_retirement_kw(desc)
             in_window = (
                 (rem_hrs is not None and rem_hrs <= comp_win)
                 or (rem_hrs is None and rem_days is not None and rem_days <= 60)
@@ -324,8 +321,6 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
                     "group":           tracked_group,
-                    "item_type":       item_type,
-                    "requirement_type": req_type,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
                     "next_due_date":   None,
@@ -336,8 +331,6 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "tracked":         tracked_label is not None,
                     "tracked_label":   tracked_label,
                     "rii":             rii_flag,
-                    "item_type":       item_type,
-                    "requirement_type": req_type,
                 })
 
         # ── PART items: always include if within window ────────────────────
@@ -352,8 +345,6 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
                     "group":           None,
-                    "item_type":       item_type,
-                    "requirement_type": req_type,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
                     "next_due_date":   None,
@@ -364,36 +355,6 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "tracked":         False,
                     "tracked_label":   None,
                     "rii":             rii_flag,
-                    "item_type":       item_type,
-                    "requirement_type": req_type,
-                })
-
-        # ── Phase fleets: also retain component-style rows for Components tab ──
-        if fleet_type == "phase":
-            is_comp = (item_type == "PART") or has_retirement_kw(desc, req_type)
-            in_window = (
-                (rem_hrs is not None and rem_hrs <= comp_win)
-                or (rem_hrs is None and rem_days is not None and rem_days <= 60)
-                or status_raw.upper() == "PAST DUE"
-            )
-            if is_comp and in_window:
-                clean_desc = re.sub(r"^\(RII\)\s*", "", desc, flags=re.IGNORECASE)
-                clean_desc = re.sub(r"^RII\s+", "", clean_desc, flags=re.IGNORECASE).strip()
-                aircraft[reg]["_components"].append({
-                    "label":            clean_desc or desc,
-                    "group":            "Components",
-                    "item_type":        item_type,
-                    "requirement_type": req_type,
-                    "ata":              ata_text,
-                    "description":      clean_desc or desc,
-                    "next_due_date":    None,
-                    "remaining_hours":  rem_hrs,
-                    "remaining_days":   rem_days,
-                    "next_due_status":  status_raw,
-                    "status":           status,
-                    "tracked":          False,
-                    "tracked_label":    None,
-                    "rii":              rii_flag,
                 })
 
     # ── Finalize: merge phase intervals into ordered items list ────────────
@@ -405,12 +366,11 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 it  = ac_data["_phase"].get(key)
                 if it:
                     phase_items.append(it)
-            ac_data["items"] = phase_items + ac_data.get("_components", [])
+            ac_data["items"] = phase_items
 
     # Clean up temp key; for 'all' type also sort by urgency
     for reg, ac_data in aircraft.items():
         ac_data.pop("_phase", None)
-        ac_data.pop("_components", None)
         if fleet_type != "phase":
             ac_data["items"].sort(key=urgency_sort_key)
 
@@ -568,6 +528,19 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     if base_assignments:
         log(f"  Loaded base assignments")
 
+    # ── ADSB.lol positions ────────────────────────────────────────────────
+    positions = {}
+    positions_path = data_root / f"positions_{fleet_id}.json"
+    if positions_path.exists():
+        try:
+            with open(positions_path, encoding="utf-8") as f:
+                pos_data = json.load(f)
+            positions = pos_data.get("positions", {})
+            airborne = sum(1 for p in positions.values() if p.get("airborne"))
+            log(f"  Loaded positions for {len(positions)} aircraft ({airborne} airborne)")
+        except Exception as e:
+            log(f"  Warning: Could not load positions: {e}")
+
     # ── Build summary ─────────────────────────────────────────────────────
     all_items = []
     for ac_data in aircraft.values():
@@ -601,6 +574,9 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
     if skyrouter:
         out["skyrouter"] = skyrouter
+
+    if positions:
+        out["positions"] = positions
 
     # ── Write output ──────────────────────────────────────────────────────
     out_dir  = dist_root / fleet_id
