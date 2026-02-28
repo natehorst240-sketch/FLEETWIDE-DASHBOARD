@@ -1,0 +1,176 @@
+{
+  "generated_utc": "2026-02-28T00:00:18+00:00",
+  "fleet_id": "bell407",
+  "aircraft": {
+    "N407IH": {
+      "registration": "N407IH",
+      "source": "none",
+      "status": "no_data",
+      "airborne": false,
+      "last_seen": null,
+      "position": {
+        "lat": null,
+        "lon": null,
+        "altitude_ft": null,
+        "groundspeed_kts": null,
+        "heading": null
+      },
+      "flight": {
+        "ident": null,
+        "origin": null,
+        "destination": null,
+        "actual_off": null,
+        "actual_on": null
+      },
+      "base": {
+        "at_base": null,
+        "base_id": null,
+        "base_name": null,
+        "distance_nm": null
+      },
+      "fetched_utc": "2026-02-28T00:00:16+00:00"
+    },
+    "N407HS": {
+      "registration": "N407HS",
+      "source": "none",
+      "status": "no_data",
+      "airborne": false,
+      "last_seen": null,
+      "position": {
+        "lat": null,
+        "lon": null,
+        "altitude_ft": null,
+        "groundspeed_kts": null,
+        "heading": null
+      },
+      "flight": {
+        "ident": null,
+        "origin": null,
+        "destination": null,
+        "actual_off": null,
+        "actual_on": null
+      },
+      "base": {
+        "at_base": null,
+        "base_id": null,
+        "base_name": null,
+        "distance_nm": null
+      },
+      "fetched_utc": "2026-02-28T00:00:18+00:00"
+    }
+  },
+  "base_assignments": {
+    "bases": {
+      "SLC": {
+        "aircraft": [],
+        "name": "Intermountain Medical Center"
+      },
+      "LDS": {
+        "aircraft": [],
+        "name": "LDS Hospital"
+      },
+      "MCKAY": {
+        "aircraft": [],
+        "name": "McKay-Dee Hospital"
+      },
+      "UTAH": {
+        "aircraft": [],
+        "name": "Utah Valley Hospital"
+      },
+      "AMER": {
+        "aircraft": [],
+        "name": "American Fork Hospital"
+      }
+    },
+    "airborne": [],
+    "away": [
+      {
+        "tail": "N407IH",
+        "source": "none",
+        "status": "no_data",
+        "airborne": false,
+        "lat": null,
+        "lon": null,
+        "altitude_ft": null,
+        "groundspeed_kts": null,
+        "heading": null,
+        "last_seen": null,
+        "flight": {
+          "ident": null,
+          "origin": null,
+          "destination": null,
+          "actual_off": null,
+          "actual_on": null
+        },
+        "at_base": null,
+        "base_id": null,
+        "distance_nm": null
+      },
+      {
+        "tail": "N407HS",
+        "source": "none",
+        "status": "no_data",
+        "airborne": false,
+        "lat": null,
+        "lon": null,
+        "altitude_ft": null,
+        "groundspeed_kts": null,
+        "heading": null,
+        "last_seen": null,
+        "flight": {
+          "ident": null,
+          "origin": null,
+          "destination": null,
+          "actual_off": null,
+          "actual_on": null
+        },
+        "at_base": null,
+        "base_id": null,
+        "distance_nm": null
+      }
+    ]
+  },
+  "bases": {
+    "SLC": {
+      "name": "Intermountain Medical Center",
+      "lat": 40.6598,
+      "lon": -111.8982
+    },
+    "LDS": {
+      "name": "LDS Hospital",
+      "lat": 40.7747,
+      "lon": -111.8783
+    },
+    "MCKAY": {
+      "name": "McKay-Dee Hospital",
+      "lat": 41.2205,
+      "lon": -111.9663
+    },
+    "UTAH": {
+      "name": "Utah Valley Hospital",
+      "lat": 40.2338,
+      "lon": -111.6585
+    },
+    "AMER": {
+      "name": "American Fork Hospital",
+      "lat": 40.3757,
+      "lon": -111.7963
+    }
+  },
+  "data_sources": {
+    "adsb_lol": 0,
+    "flightaware": 0,
+    "none": 2,
+    "dry_run": 0
+  },
+  "fa_spend": {
+    "month": "2026-02",
+    "calls_this_month": 4,
+    "usd_this_month": 0.02,
+    "monthly_cap_usd": 5.0,
+    "safety_cap_usd": 4.5,
+    "remaining_usd": 4.48,
+    "calls_remaining": 896,
+    "cap_reached": false
+  }
+}
