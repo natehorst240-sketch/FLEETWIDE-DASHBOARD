@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-28T00:14:12Z",
+  "generated_at_utc": "2026-02-28T01:02:46Z",
   "fleet": "AW109SP",
   "fleet_id": "aw109sp",
   "fleet_type": "phase",
@@ -989,7 +989,7 @@
     }
   },
   "flightaware": {
-    "generated_utc": "2026-02-28T00:14:08+00:00",
+    "generated_utc": "2026-02-28T01:02:41+00:00",
     "fleet_id": "aw109sp",
     "aircraft": {
       "N109IH": {
@@ -1018,7 +1018,7 @@
           "base_name": null,
           "distance_nm": null
         },
-        "fetched_utc": "2026-02-28T00:14:07+00:00"
+        "fetched_utc": "2026-02-28T01:02:39+00:00"
       },
       "N109SP": {
         "registration": "N109SP",
@@ -1046,7 +1046,7 @@
           "base_name": null,
           "distance_nm": null
         },
-        "fetched_utc": "2026-02-28T00:14:08+00:00"
+        "fetched_utc": "2026-02-28T01:02:41+00:00"
       }
     },
     "base_assignments": {
@@ -1155,12 +1155,12 @@
     },
     "fa_spend": {
       "month": "2026-02",
-      "calls_this_month": 10,
-      "usd_this_month": 0.05,
+      "calls_this_month": 14,
+      "usd_this_month": 0.07,
       "monthly_cap_usd": 5.0,
       "safety_cap_usd": 4.5,
-      "remaining_usd": 4.45,
-      "calls_remaining": 890,
+      "remaining_usd": 4.43,
+      "calls_remaining": 885,
       "cap_reached": false
     }
   }
