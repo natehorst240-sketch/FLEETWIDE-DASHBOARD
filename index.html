@@ -985,7 +985,29 @@ function defaultConfig() {
 function loadConfig() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.fleets)) {
+        return {
+          fleets: parsed.fleets
+            .filter(f => f && typeof f === 'object')
+            .map((f, i) => ({
+              id: str(f.id || `fleet_${i}`),
+              name: str(f.name || `Fleet ${i + 1}`),
+              type: (f.type === 'phase' || f.type === 'all') ? f.type : 'all',
+              dataFile: str(f.dataFile || ''),
+              inspections: Array.isArray(f.inspections) ? f.inspections : [],
+              thresholds: {
+                criticalDays: Number(f.thresholds?.criticalDays ?? 7),
+                comingDays: Number(f.thresholds?.comingDays ?? 30),
+                criticalHrs: Number(f.thresholds?.criticalHrs ?? 25),
+                comingHrs: Number(f.thresholds?.comingHrs ?? 100),
+                componentWindow: Number(f.thresholds?.componentWindow ?? 200),
+              }
+            }))
+        };
+      }
+    }
   } catch(e) {}
   return defaultConfig();
 }
