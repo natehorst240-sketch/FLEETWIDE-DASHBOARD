@@ -1090,6 +1090,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1115,6 +1117,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1137,6 +1141,8 @@ function getItems(data, fleetCfg) {
       tracked: it.tracked,
       tracked_label: it.tracked_label,
       rii: it.rii || false,
+      item_type: it.item_type || '',
+      requirement_type: it.requirement_type || it.requirement || '',
     }));
   }
 
@@ -1557,7 +1563,7 @@ function buildComponentsTab(fleet, data, items) {
   const thresh = fleet.thresholds;
   const win = thresh.componentWindow || 200;
 
-  // Filter to component-style items (PART or retirement keywords in inspection name)
+  // Filter to component-style items (PART or retirement keywords in inspection/requirement text)
   const retKw = ['RETIRE','OVERHAUL','DISCARD','LIFE LIMIT','TBO','REPLACEMENT','REPLACE','CHANGE OIL','NOZZLE','BATTERY','CARTRIDGE','BELT','FILTER'];
   const compItems = items.filter(it => {
     const d = numVal(it.remaining_days);

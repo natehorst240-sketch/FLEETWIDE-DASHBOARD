@@ -337,6 +337,8 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "tracked":         tracked_label is not None,
                     "tracked_label":   tracked_label,
                     "rii":             rii_flag,
+                    "item_type":       item_type,
+                    "requirement_type": req_type,
                 })
 
         # ── PART items: always include if within window ────────────────────
@@ -363,6 +365,8 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "tracked":         False,
                     "tracked_label":   None,
                     "rii":             rii_flag,
+                    "item_type":       item_type,
+                    "requirement_type": req_type,
                 })
 
     # ── Finalize: merge phase intervals into ordered items list ────────────
