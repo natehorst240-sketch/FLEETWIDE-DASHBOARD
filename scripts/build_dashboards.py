@@ -259,6 +259,7 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 "airframe_report_date": rdt,
                 "items": [],
                 "_phase": {},          # temp for phase-interval dedup
+                "_components": [],     # temp for component retirement/overhaul rows
             }
 
         ata_text  = row[COLS["ata"]].strip()  if row[COLS["ata"]]  else ""
@@ -367,6 +368,34 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "requirement_type": req_type,
                 })
 
+        # ── Phase fleets: also retain component-style rows for Components tab ──
+        if fleet_type == "phase":
+            is_comp = (item_type == "PART") or has_retirement_kw(desc, req_type)
+            in_window = (
+                (rem_hrs is not None and rem_hrs <= comp_win)
+                or (rem_hrs is None and rem_days is not None and rem_days <= 60)
+                or status_raw.upper() == "PAST DUE"
+            )
+            if is_comp and in_window:
+                clean_desc = re.sub(r"^\(RII\)\s*", "", desc, flags=re.IGNORECASE)
+                clean_desc = re.sub(r"^RII\s+", "", clean_desc, flags=re.IGNORECASE).strip()
+                aircraft[reg]["_components"].append({
+                    "label":            clean_desc or desc,
+                    "group":            "Components",
+                    "item_type":        item_type,
+                    "requirement_type": req_type,
+                    "ata":              ata_text,
+                    "description":      clean_desc or desc,
+                    "next_due_date":    None,
+                    "remaining_hours":  rem_hrs,
+                    "remaining_days":   rem_days,
+                    "next_due_status":  status_raw,
+                    "status":           status,
+                    "tracked":          False,
+                    "tracked_label":    None,
+                    "rii":              rii_flag,
+                })
+
     # ── Finalize: merge phase intervals into ordered items list ────────────
     if fleet_type == "phase":
         for reg, ac_data in aircraft.items():
@@ -376,11 +405,12 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 it  = ac_data["_phase"].get(key)
                 if it:
                     phase_items.append(it)
-            ac_data["items"] = phase_items
+            ac_data["items"] = phase_items + ac_data.get("_components", [])
 
     # Clean up temp key; for 'all' type also sort by urgency
     for reg, ac_data in aircraft.items():
         ac_data.pop("_phase", None)
+        ac_data.pop("_components", None)
         if fleet_type != "phase":
             ac_data["items"].sort(key=urgency_sort_key)
 

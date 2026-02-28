@@ -1156,6 +1156,7 @@ function getIntervals(data, fleetCfg) {
   for (const [tail, ac] of Object.entries(data.aircraft)) {
     if (!result[tail]) result[tail] = { airframe_hours: ac.airframe_hours, intervals: {} };
     for (const it of (ac.items || [])) {
+      if (it.tracked === false) continue;
       const key = it.tracked_label || it.label;
       if (!key) continue;
       if (!result[tail].intervals[key]) {
