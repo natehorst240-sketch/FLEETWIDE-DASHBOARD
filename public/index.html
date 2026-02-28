@@ -1086,6 +1086,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1109,6 +1111,8 @@ function getItems(data, fleetCfg) {
           tracked: it.tracked,
           tracked_label: it.tracked_label,
           rii: it.rii || false,
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || it.requirement || '',
         });
       }
     }
@@ -1129,6 +1133,8 @@ function getItems(data, fleetCfg) {
       tracked: it.tracked,
       tracked_label: it.tracked_label,
       rii: it.rii || false,
+      item_type: it.item_type || '',
+      requirement_type: it.requirement_type || it.requirement || '',
     }));
   }
 
@@ -1549,14 +1555,15 @@ function buildComponentsTab(fleet, data, items) {
   const thresh = fleet.thresholds;
   const win = thresh.componentWindow || 200;
 
-  // Filter to component-style items (PART or retirement keywords in inspection name)
+  // Filter to component-style items (PART or retirement keywords in inspection/requirement text)
   const retKw = ['RETIRE','OVERHAUL','DISCARD','LIFE LIMIT','TBO','REPLACEMENT','REPLACE','CHANGE OIL','NOZZLE','BATTERY','CARTRIDGE','BELT','FILTER'];
   const compItems = items.filter(it => {
     const d = numVal(it.remaining_days);
     const h = numVal(it.remaining_hours);
-    const nameU = str(it.inspection).toUpperCase();
-    const isRetType = retKw.some(k => nameU.includes(k));
-    if (!isRetType) return false;
+    const txt = `${str(it.inspection)} ${str(it.requirement_type)}`.toUpperCase();
+    const isRetType = retKw.some(k => txt.includes(k));
+    const isPart = str(it.item_type).toUpperCase() === 'PART';
+    if (!isRetType && !isPart) return false;
     if (h !== null && h <= win) return true;
     if (d !== null && d <= 60) return true;
     const s = str(it.status).toUpperCase();
