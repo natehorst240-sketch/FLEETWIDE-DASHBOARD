@@ -451,11 +451,26 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
     # ── Input paths ───────────────────────────────────────────────────────
     fleet_data_dir = data_root / fleet_id
-    daily_csv   = fleet_data_dir / "Due-List_Latest.csv"
-    weekly_csv  = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
-    history_path   = fleet_data_dir / "flight_hours_history.json"
-    skyrouter_path = fleet_data_dir / "skyrouter_status.json"
-    bases_path     = fleet_data_dir / "base_assignments.json"
+    # Support both flat data/ layout (Due-List_Latest_<fleet_id>.csv)
+    # and per-fleet subfolder layout (data/<fleet_id>/Due-List_Latest.csv)
+    daily_csv  = data_root / f"Due-List_Latest_{fleet_id}.csv"
+    weekly_csv = data_root / f"Due-List_BIG_WEEKLY_{fleet_id}.csv"
+    # Fallback to subfolder layout
+    if not daily_csv.exists():
+        daily_csv  = fleet_data_dir / f"Due-List_Latest_{fleet_id}.csv"
+        weekly_csv = fleet_data_dir / f"Due-List_BIG_WEEKLY_{fleet_id}.csv"
+    if not daily_csv.exists():
+        daily_csv  = fleet_data_dir / "Due-List_Latest.csv"
+        weekly_csv = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
+    history_path   = data_root / f"flight_hours_history_{fleet_id}.json"
+    if not history_path.exists():
+        history_path = fleet_data_dir / "flight_hours_history.json"
+    skyrouter_path = data_root / f"skyrouter_status_{fleet_id}.json"
+    if not skyrouter_path.exists():
+        skyrouter_path = fleet_data_dir / "skyrouter_status.json"
+    bases_path     = data_root / f"base_assignments_{fleet_id}.json"
+    if not bases_path.exists():
+        bases_path = fleet_data_dir / "base_assignments.json"
 
     if not daily_csv.exists():
         log(f"  ⚠ Skipping {fleet_name}: no data file at {daily_csv}")
@@ -497,7 +512,7 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
                 pass
     history = update_history(history, aircraft, report_dt)
     save_history(history_path, history)
-    log(f"  Updated flight hours history")
+    log(f"  Updated flight hours history → {history_path}")
 
     # ── Optional data sources ─────────────────────────────────────────────
     skyrouter = {}
