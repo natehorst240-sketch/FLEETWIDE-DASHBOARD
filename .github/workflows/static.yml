@@ -9,9 +9,8 @@ on:
       - 'scripts/**'
       - 'public/**'
   schedule:
-    # Run every day at 07:00 UTC (adjust to your timezone)
-    - cron: '0 7 * * *'
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 14 * * *'   # 08:00 MDT daily
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -34,8 +33,12 @@ jobs:
       - name: Install dependencies
         run: pip install pandas requests openpyxl
 
-      # ── Optional: fetch FlightAware AeroAPI positions ─────────────────
-      - name: Fetch FlightAware positions (if API key set)
+      # ── Create dist scaffold ──────────────────────────────────────────
+      - name: Create dist directory
+        run: mkdir -p dist/data
+
+      # ── Optional: fetch positions ─────────────────────────────────────
+      - name: Fetch aircraft positions (if API key set)
         env:
           FLIGHTAWARE_API_KEY: ${{ secrets.FLIGHTAWARE_API_KEY }}
         if: ${{ env.FLIGHTAWARE_API_KEY != '' }}
@@ -52,16 +55,16 @@ jobs:
             --data data \
             --dist dist/data
 
-      # ── Copy frontend to dist ─────────────────────────────────────────
-      - name: Copy frontend to dist
+      # ── Copy frontend into dist ───────────────────────────────────────
+      - name: Assemble dist
         run: |
           cp -r public/* dist/
-          echo "dist/ contents:"
+          echo "── dist/ ──"
           ls -la dist/
-          echo "dist/data/ contents:"
-          ls -la dist/data/ || true
+          echo "── dist/data/ ──"
+          ls -la dist/data/ || echo "(empty)"
 
-      # ── Commit any updated flight history files ────────────────────────
+      # ── Commit history files back to main ────────────────────────────
       - name: Commit history updates
         run: |
           git config user.name  "github-actions[bot]"
@@ -72,7 +75,7 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: update flight history + positions [skip ci]"
           git push || true
 
-      # ── Deploy to GitHub Pages ────────────────────────────────────────
+      # ── Deploy to GitHub Pages (gh-pages branch) ─────────────────────
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
