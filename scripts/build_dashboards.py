@@ -458,8 +458,8 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     bases_path     = fleet_data_dir / "base_assignments.json"
 
     if not daily_csv.exists():
-        log(f"  ✗ Missing daily CSV: {daily_csv}")
-        return False
+        log(f"  ⚠ Skipping {fleet_name}: no data file at {daily_csv}")
+        return None  # None = skipped, not an error
 
     # ── Parse CSVs ────────────────────────────────────────────────────────
     log(f"  Parsing {daily_csv.name} ...")
@@ -559,7 +559,11 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
 
 def build_all(config_path: Path, data_root: Path, dist_root: Path) -> int:
-    """Build all fleets defined in config. Returns exit code."""
+    """Build all fleets defined in config. Returns exit code.
+    Exit 0 if all fleets either built successfully or were skipped due to
+    missing CSV data (no data uploaded yet is not an error in CI).
+    Exit 1 only on real errors (bad config, parse failure, etc.).
+    """
     if not config_path.exists():
         log(f"ERROR: Config file not found: {config_path}")
         log("Export fleet_config.json from the dashboard's Configure Fleets modal.")
@@ -575,12 +579,19 @@ def build_all(config_path: Path, data_root: Path, dist_root: Path) -> int:
 
     log(f"Building {len(fleets)} fleet(s)...")
     ok = 0
+    skipped = 0
     for fc in fleets:
-        if build_fleet(fc, data_root, dist_root):
+        result = build_fleet(fc, data_root, dist_root)
+        if result is True:
             ok += 1
+        elif result is None:
+            skipped += 1
+        # False = real error
 
-    log(f"Done: {ok}/{len(fleets)} fleets built successfully.")
-    return 0 if ok == len(fleets) else 1
+    total_done = ok + skipped
+    log(f"Done: {ok} built, {skipped} skipped (no data), {len(fleets)-total_done} errors.")
+    # Only fail if there was a real error (not just missing CSV data)
+    return 0 if (len(fleets) - total_done) == 0 else 1
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
