@@ -1078,6 +1078,8 @@ function getItems(data, fleetCfg) {
           tail,
           airframe_hours: ac.airframe_hours,
           inspection: it.label || it.inspection || it.description || it.name || '—',
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || '',
           ata: it.ata || it.ata_code || '—',
           due_date: it.next_due_date || it.due_date || null,
           remaining_days: it.remaining_days ?? it.remaining_days ?? null,
@@ -1101,6 +1103,8 @@ function getItems(data, fleetCfg) {
           tail,
           airframe_hours: ac.airframe_hours,
           inspection: it.label || it.inspection || it.description || it.name || '—',
+          item_type: it.item_type || '',
+          requirement_type: it.requirement_type || '',
           ata: it.ata || it.ata_code || '—',
           due_date: it.next_due_date || it.due_date || null,
           remaining_days: it.remaining_days ?? null,
@@ -1121,6 +1125,8 @@ function getItems(data, fleetCfg) {
       tail: it.tail || it.registration || '?',
       airframe_hours: it.airframe_hours,
       inspection: it.inspection || it.name || it.label || '—',
+      item_type: it.item_type || '',
+      requirement_type: it.requirement_type || '',
       ata: it.ata || it.ata_code || '—',
       due_date: it.due_date || it.next_due_date || null,
       remaining_days: it.remaining_days ?? null,
@@ -1555,12 +1561,14 @@ function buildComponentsTab(fleet, data, items) {
     const d = numVal(it.remaining_days);
     const h = numVal(it.remaining_hours);
     const nameU = str(it.inspection).toUpperCase();
-    const isRetType = retKw.some(k => nameU.includes(k));
-    if (!isRetType) return false;
+    const reqU = str(it.requirement_type).toUpperCase();
+    const isRetType = retKw.some(k => nameU.includes(k) || reqU.includes(k));
+    const isPart = str(it.item_type).toUpperCase() === 'PART';
+    if (!isPart && !isRetType) return false;
     if (h !== null && h <= win) return true;
     if (d !== null && d <= 60) return true;
     const s = str(it.status).toUpperCase();
-    if (s.includes('PAST DUE')) return true;
+    if (s.includes('PAST DUE') || s.includes('OVERDUE')) return true;
     return false;
   });
 

@@ -41,6 +41,7 @@ COLS = {
     "ata":          5,
     "equip_hrs":    7,
     "item_type":   11,
+    "requirement": 12,
     "disposition": 13,
     "desc":        15,
     "interval_hrs":30,
@@ -192,9 +193,11 @@ def urgency_sort_key(item: dict) -> tuple:
     return (bucket, sub)
 
 
-def has_retirement_kw(desc: Any) -> bool:
+def has_retirement_kw(desc: Any, requirement: Any = None) -> bool:
     d = str(desc).upper()
-    return any(kw in d for kw in RETIREMENT_KW)
+    r = str(requirement).upper()
+    text = f"{d} {r}"
+    return any(kw in text for kw in RETIREMENT_KW)
 
 
 # ─── CSV PARSING ──────────────────────────────────────────────────────────────
@@ -263,6 +266,7 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
         ata_text  = row[COLS["ata"]].strip()  if row[COLS["ata"]]  else ""
         item_type = row[COLS["item_type"]].strip().upper() if row[COLS["item_type"]] else ""
         desc      = row[COLS["desc"]].strip() if row[COLS["desc"]] else ""
+        req_type  = row[COLS["requirement"]].strip() if row[COLS["requirement"]] else ""
         rem_hrs   = safe_float(row[COLS["rem_hrs"]])
         rem_days  = safe_float(row[COLS["rem_days"]])
         status_raw= row[COLS["status"]].strip() if row[COLS["status"]] else ""
@@ -307,7 +311,7 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     break
 
             # Include if tracked OR if it's a component-style item within window
-            is_comp = has_retirement_kw(desc)
+            is_comp = has_retirement_kw(desc, req_type)
             in_window = (
                 (rem_hrs is not None and rem_hrs <= comp_win)
                 or (rem_hrs is None and rem_days is not None and rem_days <= 60)
@@ -321,6 +325,8 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
                     "group":           tracked_group,
+                    "item_type":       item_type,
+                    "requirement_type": req_type,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
                     "next_due_date":   None,
@@ -345,6 +351,8 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
                     "group":           None,
+                    "item_type":       item_type,
+                    "requirement_type": req_type,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
                     "next_due_date":   None,
