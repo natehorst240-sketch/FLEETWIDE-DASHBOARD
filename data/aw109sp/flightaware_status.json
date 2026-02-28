@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-02-28T00:00:14+00:00",
+  "generated_utc": "2026-02-28T00:01:16+00:00",
   "fleet_id": "aw109sp",
   "aircraft": {
     "N109IH": {
@@ -28,7 +28,7 @@
         "base_name": null,
         "distance_nm": null
       },
-      "fetched_utc": "2026-02-28T00:00:12+00:00"
+      "fetched_utc": "2026-02-28T00:01:14+00:00"
     },
     "N109SP": {
       "registration": "N109SP",
@@ -56,7 +56,7 @@
         "base_name": null,
         "distance_nm": null
       },
-      "fetched_utc": "2026-02-28T00:00:14+00:00"
+      "fetched_utc": "2026-02-28T00:01:16+00:00"
     }
   },
   "base_assignments": {
@@ -165,12 +165,12 @@
   },
   "fa_spend": {
     "month": "2026-02",
-    "calls_this_month": 2,
-    "usd_this_month": 0.01,
+    "calls_this_month": 6,
+    "usd_this_month": 0.03,
     "monthly_cap_usd": 5.0,
     "safety_cap_usd": 4.5,
-    "remaining_usd": 4.49,
-    "calls_remaining": 898,
+    "remaining_usd": 4.47,
+    "calls_remaining": 893,
     "cap_reached": false
   }
 }
