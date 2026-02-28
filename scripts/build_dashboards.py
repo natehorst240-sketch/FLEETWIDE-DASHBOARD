@@ -108,17 +108,42 @@ def parse_date_as_dt(val: Any) -> Optional[datetime]:
 
 
 def norm_ata(x: Any) -> str:
-    """Normalize an ATA string for matching."""
+    """Normalize an ATA string for matching.
+    - Uppercase, collapse whitespace
+    - Remove spaces around punctuation
+    - Normalize . and / to - so 24MO.INSPECTION == 24MO-INSPECTION
+    """
     if x is None:
         return ""
     s = str(x).strip().upper()
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"\s*([-./])\s*", r"\1", s)
+    # Normalize word-separators to dash so dots/slashes match dashes in label names
+    # e.g. "24MO.INSPECTION" -> "24MO-INSPECTION"
+    s = re.sub(r"(?<=[A-Z0-9])[./](?=[A-Z])", "-", s)
     return s
 
 
+def strip_ata_chapter(s: str) -> str:
+    """
+    Strip the leading ATA chapter number from a normalized ATA string.
+    E.g. '05 12MO-INSPECTION' -> '12MO-INSPECTION'
+         '72 72/300'          -> '72/300'
+         '63 11-20 INTERIM'   -> '11-20 INTERIM'
+    Removes a leading 1-2 digit chapter code and optional space.
+    """
+    return re.sub(r"^\d{2}\s+", "", s).strip()
+
+
 def ata_matches(ata_val: Any, rule: dict) -> bool:
-    """Check if an ATA value matches a configured inspection rule."""
+    """
+    Check if an ATA value matches a configured inspection rule.
+    Modes:
+      contains      - target appears anywhere in the full ATA string
+      exact         - target equals full ATA string or a space-split token
+      strip-chapter - strip leading chapter digits+space from both sides,
+                      then check target appears anywhere in remainder
+    """
     a = norm_ata(ata_val)
     t = norm_ata(rule.get("ataMatch", rule.get("match", "")))
     if not a or not t:
@@ -126,6 +151,11 @@ def ata_matches(ata_val: Any, rule: dict) -> bool:
     mode = rule.get("mode", "contains")
     if mode == "exact":
         return a == t or t in a.split()
+    if mode == "strip-chapter":
+        a_stripped = strip_ata_chapter(a)
+        t_stripped = strip_ata_chapter(t)
+        return t_stripped in a_stripped
+    # default: contains
     return t in a
 
 
@@ -174,17 +204,37 @@ def read_csv_rows(filepath: Path) -> list[list[str]]:
         return list(csv.reader(f))
 
 
+def _flatten_inspections(fleet_cfg: dict) -> list[dict]:
+    """
+    Return a flat list of inspection rules, each tagged with '_group'.
+    Handles both:
+      - flat:    fleet_cfg["inspections"] = [{label, ataMatch, mode}, ...]
+      - grouped: fleet_cfg["inspection_groups"] = [{label, inspections:[...]}, ...]
+    """
+    groups = fleet_cfg.get("inspection_groups", [])
+    if groups:
+        flat = []
+        for grp in groups:
+            for rule in grp.get("inspections", []):
+                flat.append({**rule, "_group": grp["label"]})
+        return flat
+    return [{**r, "_group": None} for r in fleet_cfg.get("inspections", [])]
+
+
 def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
     """
     Parse a single CSV file for a fleet.
     Returns a dict keyed by tail with aircraft meta and items list.
     Works for both 'phase' and 'all' fleet types.
+
+    For 'phase' fleets, each item carries a 'group' key (str or None) so the
+    frontend can render multiple tables (e.g. Phase Inspections + Interim).
     """
     rows = read_csv_rows(filepath)
     if len(rows) < 2:
         raise ValueError(f"CSV appears empty: {filepath}")
 
-    inspections = fleet_cfg.get("inspections", [])
+    inspections = _flatten_inspections(fleet_cfg)
     thresh      = fleet_cfg.get("thresholds", {})
     comp_win    = thresh.get("componentWindow", 200)
     fleet_type  = fleet_cfg.get("type", "all")
@@ -234,9 +284,9 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     if existing is None or _more_urgent(rem_hrs, rem_days, existing):
                         aircraft[reg]["_phase"][key] = {
                             "label":           rule["label"],
+                            "group":           rule.get("_group"),
                             "ata":             ata_text,
                             "description":     desc,
-                            "next_due_date":   parse_date(row[COLS["rem_days"] - 1] if len(row) > COLS["rem_days"] else None),  # best-effort
                             "remaining_hours": rem_hrs,
                             "remaining_days":  rem_days,
                             "next_due_status": status_raw,
@@ -249,9 +299,11 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
         # ── All type: include inspections matching any tracked rule ────────
         elif fleet_type == "all" and item_type == "INSPECTION":
             tracked_label = None
+            tracked_group = None
             for rule in inspections:
                 if ata_matches(ata_text, rule):
                     tracked_label = rule["label"]
+                    tracked_group = rule.get("_group")
                     break
 
             # Include if tracked OR if it's a component-style item within window
@@ -268,9 +320,10 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
 
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
+                    "group":           tracked_group,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
-                    "next_due_date":   None,  # Not reliably in this CSV column
+                    "next_due_date":   None,
                     "remaining_hours": rem_hrs,
                     "remaining_days":  rem_days,
                     "next_due_status": status_raw,
@@ -282,7 +335,6 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
 
         # ── PART items: always include if within window ────────────────────
         elif item_type == "PART":
-            is_comp = True
             in_window = (
                 (rem_hrs is not None and rem_hrs <= comp_win)
                 or (rem_hrs is None and rem_days is not None and rem_days <= 60)
@@ -292,6 +344,7 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 clean_desc = re.sub(r"^\(RII\)\s*", "", desc, flags=re.IGNORECASE).strip()
                 aircraft[reg]["items"].append({
                     "label":           clean_desc or desc,
+                    "group":           None,
                     "ata":             ata_text,
                     "description":     clean_desc or desc,
                     "next_due_date":   None,
@@ -304,10 +357,9 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                     "rii":             rii_flag,
                 })
 
-    # ── Finalize: merge phase intervals into items list ────────────────────
+    # ── Finalize: merge phase intervals into ordered items list ────────────
     if fleet_type == "phase":
         for reg, ac_data in aircraft.items():
-            # Build ordered items from phase dict (order matches inspections config)
             phase_items = []
             for rule in inspections:
                 key = rule["label"]
@@ -315,11 +367,12 @@ def parse_fleet_csv(filepath: Path, fleet_cfg: dict) -> dict:
                 if it:
                     phase_items.append(it)
             ac_data["items"] = phase_items
-    
-    # Clean up temp key and sort
+
+    # Clean up temp key; for 'all' type also sort by urgency
     for reg, ac_data in aircraft.items():
         ac_data.pop("_phase", None)
-        ac_data["items"].sort(key=urgency_sort_key)
+        if fleet_type != "phase":
+            ac_data["items"].sort(key=urgency_sort_key)
 
     return aircraft
 
@@ -398,17 +451,10 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
 
     # ── Input paths ───────────────────────────────────────────────────────
     fleet_data_dir = data_root / fleet_id
-    # Try fleet-specific filename first (Due-List_Latest_aw109sp.csv),
-    # then fall back to generic (Due-List_Latest.csv) for backwards compatibility.
-    daily_csv  = fleet_data_dir / f"Due-List_Latest_{fleet_id}.csv"
-    if not daily_csv.exists():
-        daily_csv = fleet_data_dir / "Due-List_Latest.csv"
-
-    weekly_csv = fleet_data_dir / f"Due-List_BIG_WEEKLY_{fleet_id}.csv"
-    if not weekly_csv.exists():
-        weekly_csv = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
+    daily_csv   = fleet_data_dir / "Due-List_Latest.csv"
+    weekly_csv  = fleet_data_dir / "Due-List_BIG_WEEKLY.csv"
     history_path   = fleet_data_dir / "flight_hours_history.json"
-    flightaware_path = fleet_data_dir / "flightaware_status.json"
+    skyrouter_path = fleet_data_dir / "skyrouter_status.json"
     bases_path     = fleet_data_dir / "base_assignments.json"
 
     if not daily_csv.exists():
@@ -422,17 +468,19 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     if weekly_csv.exists() and fleet_type == "phase":
         log(f"  Merging {weekly_csv.name} ...")
         weekly_aircraft = parse_fleet_csv(weekly_csv, fleet_cfg)
+        flat_inspections = _flatten_inspections(fleet_cfg)
         # Merge: weekly provides long-range intervals not in daily
         for tail, wac in weekly_aircraft.items():
             if tail not in aircraft:
                 aircraft[tail] = wac
             else:
-                # Add phase items from weekly that daily doesn't have
                 daily_labels = {it["tracked_label"] for it in aircraft[tail]["items"] if it.get("tracked_label")}
                 for wit in wac["items"]:
                     if wit.get("tracked_label") and wit["tracked_label"] not in daily_labels:
                         aircraft[tail]["items"].append(wit)
-                aircraft[tail]["items"].sort(key=urgency_sort_key)
+                # Re-sort to preserve group order from config
+                label_order = {r["label"]: i for i, r in enumerate(flat_inspections)}
+                aircraft[tail]["items"].sort(key=lambda x: label_order.get(x.get("tracked_label", ""), 999))
 
     log(f"  Parsed {len(aircraft)} aircraft")
 
@@ -452,12 +500,12 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     log(f"  Updated flight hours history")
 
     # ── Optional data sources ─────────────────────────────────────────────
-    flightaware = {}
-    if flightaware_path.exists():
+    skyrouter = {}
+    if skyrouter_path.exists():
         try:
-            with open(flightaware_path, encoding="utf-8") as f:
-                flightaware = json.load(f)
-            log(f"  Loaded FlightAware data for {len(flightaware.get('aircraft', {}))} aircraft")
+            with open(skyrouter_path, encoding="utf-8") as f:
+                skyrouter = json.load(f).get("aircraft", {})
+            log(f"  Loaded SkyRouter data for {len(skyrouter)} aircraft")
         except Exception as e:
             log(f"  Warning: Could not load SkyRouter data: {e}")
 
@@ -484,8 +532,9 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
         "fleet_type":     fleet_type,
         "aircraft_count": len(aircraft),
         "config": {
-            "inspections": fleet_cfg.get("inspections", []),
-            "thresholds":  thresh,
+            "inspections":       fleet_cfg.get("inspections", []),
+            "inspection_groups": fleet_cfg.get("inspection_groups", []),
+            "thresholds":        thresh,
         },
         "summary": {**counts, "total_tracked": sum(counts.values())},
         "aircraft":        aircraft,
@@ -495,8 +544,8 @@ def build_fleet(fleet_cfg: dict, data_root: Path, dist_root: Path) -> bool:
     if base_assignments:
         out["base_assignments"] = base_assignments
 
-    if flightaware:
-        out["flightaware"] = flightaware
+    if skyrouter:
+        out["skyrouter"] = skyrouter
 
     # ── Write output ──────────────────────────────────────────────────────
     out_dir  = dist_root / fleet_id
