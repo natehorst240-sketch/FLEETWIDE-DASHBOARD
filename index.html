@@ -1434,76 +1434,6 @@ function buildPhaseTable(fleet, data) {
   ${filterRow}
   ${tables}`;
 }
-
-  // Determine if this fleet uses grouped inspections
-  const groups = (fleet.inspection_groups && fleet.inspection_groups.length)
-    ? fleet.inspection_groups
-    : [{ label: null, inspections: fleet.inspections }];
-
-  // Pick a label for the hours-remaining chart (prefer one with a number like '200' or '300')
-  const allLabels = groups.flatMap(g => g.inspections.map(i => i.label));
-  const chart200Label = allLabels.find(l => /\d/.test(l)) || allLabels[0];
-  let chartRows = [];
-
-  // Build filter bar (shared across all tables for this fleet)
-  const filterRow = `
-  <div class="chip-row">
-    <button class="chip active" onclick="filterPhaseTable('${fleet.id}', 'all', this)">All</button>
-    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'overdue', this)">Overdue</button>
-    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'critical', this)">Critical</button>
-    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'coming', this)">Coming</button>
-    <button class="chip" onclick="filterPhaseTable('${fleet.id}', 'ok', this)">OK</button>
-  </div>`;
-
-  // Build one <table> per group
-  let tables = '';
-  groups.forEach((grp, gi) => {
-    const labels = grp.inspections.map(i => i.label);
-    const headerCols = labels.map(l => `<th class="tc">${l}</th>`).join('');
-    const tbodyId = `phase-tbody-${fleet.id}-${gi}`;
-    let tableRows = '';
-
-    tails.forEach(tail => {
-      const ac = intervals[tail];
-      const ah = ac.airframe_hours;
-      let cells = '';
-      labels.forEach(lbl => {
-        const iv = ac.intervals[lbl];
-        cells += `<td class="tc">${fmtIntervalCell(iv, thresh)}</td>`;
-        if (lbl === chart200Label && iv?.rem_hrs != null) {
-          chartRows.push([tail, iv.rem_hrs]);
-        }
-      });
-      tableRows += `<tr><td><div class="tail-num">${tail}</div><div class="ah-sub">${ah ? ah+' TT' : ''}</div></td>${cells}</tr>`;
-    });
-
-    const sectionLabel = grp.label || 'Phase Inspections';
-    tables += `
-  <div class="sec-lbl" style="margin-top:${gi > 0 ? '24px' : '0'}">${sectionLabel}</div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>Aircraft</th>${headerCols}</tr></thead>
-      <tbody id="${tbodyId}" class="phase-tbody-${fleet.id}">${tableRows}</tbody>
-    </table>
-  </div>`;
-  });
-
-  // Hours-remaining bar chart
-  chartRows.sort((a,b) => a[1]-b[1]);
-  const chartLabels = chartRows.map(r => r[0]);
-  const chartVals   = chartRows.map(r => r[1].toFixed(2));
-  const chartId = `chart-${fleet.id}-phase`;
-
-  return `
-  <div class="chart-card">
-    <div class="chart-title">${chart200Label || 'Phase'} Inspection — Hours Remaining (Sorted)</div>
-    <canvas id="${chartId}" data-labels='${JSON.stringify(chartLabels)}' data-values='${JSON.stringify(chartVals)}'></canvas>
-  </div>
-  ${filterRow}
-  ${tables}`;
-}
-}
-
 function fmtIntervalCell(iv, thresh) {
   if (!iv) return '<span class="hb-na">—</span>';
   const h = numVal(iv.rem_hrs);
@@ -1903,9 +1833,18 @@ function readConfigFromModal() {
     const thresholds = { criticalDays:7, comingDays:30, criticalHrs:25, comingHrs:100, componentWindow:200 };
     threshels.forEach(el => { thresholds[el.dataset.thresh] = parseFloat(el.value) || 0; });
 
+    const preservedGroups = Array.isArray(existing.inspection_groups)
+      ? existing.inspection_groups
+      : undefined;
+
     fleets.push({
       id: existing.id || ('fleet_' + Date.now() + fi),
-      name, type, dataFile, inspections, thresholds
+      name,
+      type,
+      dataFile,
+      inspections,
+      thresholds,
+      ...(preservedGroups ? { inspection_groups: preservedGroups } : {})
     });
   });
   return { fleets };
