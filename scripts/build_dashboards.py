@@ -29,9 +29,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
-import pandas as pd
-
-
 # ─── COLUMN INDEX MAP (CAMP export, 0-based) ──────────────────────────────────
 # Adjust these if your CSV export column order differs.
 COLS = {
@@ -89,11 +86,12 @@ def parse_date(val: Any) -> Optional[str]:
             return datetime.strptime(s, fmt).date().isoformat()
         except ValueError:
             pass
+    # Handle ISO datetimes like "2025-01-15T12:30:00" or with trailing Z.
+    iso_candidate = s[:-1] + "+00:00" if s.endswith("Z") else s
     try:
-        dt = pd.to_datetime(s, errors="coerce")
-        if not pd.isna(dt):
-            return dt.date().isoformat()
-    except Exception:
+        dt = datetime.fromisoformat(iso_candidate)
+        return dt.date().isoformat()
+    except ValueError:
         pass
     return None
 
