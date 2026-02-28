@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-02-28T03:10:17+00:00",
+  "generated_utc": "2026-02-28T03:22:26+00:00",
   "fleet_id": "bell407",
   "aircraft": {
     "N407IH": {
@@ -28,7 +28,7 @@
         "base_name": null,
         "distance_nm": null
       },
-      "fetched_utc": "2026-02-28T03:10:15+00:00"
+      "fetched_utc": "2026-02-28T03:22:24+00:00"
     },
     "N407HS": {
       "registration": "N407HS",
@@ -56,7 +56,7 @@
         "base_name": null,
         "distance_nm": null
       },
-      "fetched_utc": "2026-02-28T03:10:17+00:00"
+      "fetched_utc": "2026-02-28T03:22:26+00:00"
     }
   },
   "base_assignments": {
@@ -165,12 +165,12 @@
   },
   "fa_spend": {
     "month": "2026-02",
-    "calls_this_month": 36,
-    "usd_this_month": 0.18,
+    "calls_this_month": 40,
+    "usd_this_month": 0.2,
     "monthly_cap_usd": 5.0,
     "safety_cap_usd": 4.5,
-    "remaining_usd": 4.32,
-    "calls_remaining": 864,
+    "remaining_usd": 4.3,
+    "calls_remaining": 860,
     "cap_reached": false
   }
 }
