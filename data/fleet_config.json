@@ -14,7 +14,17 @@
         { "label": "2400 Hr", "ataMatch": "11[373]", "mode": "strip-chapter" },
         { "label": "3200 Hr", "ataMatch": "1020",    "mode": "strip-chapter" }
       ],
-      "thresholds": {
+      "thresholds": {...},
+      "bases": {
+        "LOGAN":      { "name": "Logan",      "lat": 41.7912, "lon": -111.8522, "radius_miles": 5 },
+        "MCKAY":      { "name": "McKay",      "lat": 41.2545, "lon": -112.0126, "radius_miles": 5 },
+        "IMED":       { "name": "IMed",       "lat": 40.2338, "lon": -111.6585, "radius_miles": 5 },
+        "PROVO":      { "name": "Provo",      "lat": 40.2192, "lon": -111.7233, "radius_miles": 5 },
+        "ROOSEVELT":  { "name": "Roosevelt",  "lat": 40.2765, "lon": -110.0518, "radius_miles": 5 },
+        "CEDAR_CITY": { "name": "Cedar City", "lat": 37.7010, "lon": -113.0989, "radius_miles": 5 },
+        "ST_GEORGE":  { "name": "St George",  "lat": 37.0365, "lon": -113.5101, "radius_miles": 5 },
+        "KSLC":       { "name": "KSLC",       "lat": 40.7884, "lon": -111.9778, "radius_miles": 10 }
+    }
         "criticalDays": 7,
         "comingDays": 30,
         "criticalHrs": 25,
