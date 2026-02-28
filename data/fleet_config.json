@@ -1,18 +1,18 @@
 {
   "fleets": [
-    { 
+    {
       "id": "aw109sp",
       "name": "AW109SP",
       "type": "phase",
       "dataFile": "data/aw109sp/dashboard.json",
       "inspections": [
-        { "label": "50 Hr",   "ataMatch": "05 1000",     "mode": "contains" },
-        { "label": "100 Hr",  "ataMatch": "64 01[273]",  "mode": "contains" },
-        { "label": "200 Hr",  "ataMatch": "05 1005",     "mode": "contains" },
-        { "label": "400 Hr",  "ataMatch": "05 1010",     "mode": "contains" },
-        { "label": "800 Hr",  "ataMatch": "05 1015",     "mode": "contains" },
-        { "label": "2400 Hr", "ataMatch": "62 11[373]",  "mode": "contains" },
-        { "label": "3200 Hr", "ataMatch": "05 1020",     "mode": "contains" }
+        { "label": "50 Hr",   "ataMatch": "1000",    "mode": "strip-chapter" },
+        { "label": "100 Hr",  "ataMatch": "01[273]", "mode": "strip-chapter" },
+        { "label": "200 Hr",  "ataMatch": "1005",    "mode": "strip-chapter" },
+        { "label": "400 Hr",  "ataMatch": "1010",    "mode": "strip-chapter" },
+        { "label": "800 Hr",  "ataMatch": "1015",    "mode": "strip-chapter" },
+        { "label": "2400 Hr", "ataMatch": "11[373]", "mode": "strip-chapter" },
+        { "label": "3200 Hr", "ataMatch": "1020",    "mode": "strip-chapter" }
       ],
       "thresholds": {
         "criticalDays": 7,
@@ -25,21 +25,30 @@
     {
       "id": "bell407",
       "name": "Bell 407",
-      "type": "all",
+      "type": "phase",
       "dataFile": "data/bell407/dashboard.json",
-      "inspections": [
-        { "label": "12 Month",           "ataMatch": "12MO-INSPECTION",           "mode": "contains" },
-        { "label": "24 Month",           "ataMatch": "24MO-INSPECTION",           "mode": "contains" },
-        { "label": "300HR/12M Airframe", "ataMatch": "300HR-PERIODIC INSPECTION", "mode": "contains" },
-        { "label": "300HR/12M Engine",   "ataMatch": "72/300",                    "mode": "exact"    },
-        { "label": "IFR Certs 91.411",   "ataMatch": "91.411",                    "mode": "contains" },
-        { "label": "IFR Certs 91.413",   "ataMatch": "91.413",                    "mode": "contains" },
-        { "label": "MR Mast Interim",    "ataMatch": "11-20 INTERIM",             "mode": "contains" },
-        { "label": "Freewheel Interim",  "ataMatch": "13-11 INTERIM",             "mode": "contains" },
-        { "label": "Transmission",       "ataMatch": "21-10 INTERIM",             "mode": "contains" },
-        { "label": "TRGB Interim",       "ataMatch": "10-11 INTERIM",             "mode": "contains" },
-        { "label": "Spring Link",        "ataMatch": "20-12 INTERIM",             "mode": "contains" }
+      "inspection_groups": [
+        {
+          "label": "Phase Inspections",
+          "inspections": [
+            { "label": "12 Month",           "ataMatch": "12MO-INSPECTION", "mode": "strip-chapter" },
+            { "label": "24 Month",           "ataMatch": "24MO-INSPECTION", "mode": "strip-chapter" },
+            { "label": "300HR/12M Airframe", "ataMatch": "300HR-PERIODIC",  "mode": "strip-chapter" },
+            { "label": "300HR/12M Engine",   "ataMatch": "72/300",          "mode": "strip-chapter" }
+          ]
+        },
+        {
+          "label": "Interim Inspections",
+          "inspections": [
+            { "label": "MR Mast Interim",      "ataMatch": "11-20 INTERIM", "mode": "strip-chapter" },
+            { "label": "Freewheel Interim",    "ataMatch": "13-11 INTERIM", "mode": "strip-chapter" },
+            { "label": "Transmission Interim", "ataMatch": "21-10 INTERIM", "mode": "strip-chapter" },
+            { "label": "TRGB Interim",         "ataMatch": "10-11 INTERIM", "mode": "strip-chapter" },
+            { "label": "Spring Link Interim",  "ataMatch": "20-12 INTERIM", "mode": "strip-chapter" }
+          ]
+        }
       ],
+      "inspections": [],
       "thresholds": {
         "criticalDays": 7,
         "comingDays": 30,
