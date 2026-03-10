@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-09T14:42:14Z",
+  "generated_at_utc": "2026-03-10T14:41:23Z",
   "fleet": "Bell 407",
   "fleet_id": "bell407",
   "fleet_type": "phase",
@@ -686,7 +686,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:41:58Z"
+      "last_updated": "2026-03-10T14:41:05Z"
     },
     "N39KM": {
       "registration": "N39KM",
@@ -701,7 +701,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:41:58Z"
+      "last_updated": "2026-03-10T14:41:06Z"
     },
     "N407BY": {
       "registration": "N407BY",
@@ -716,7 +716,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:41:59Z"
+      "last_updated": "2026-03-10T14:41:06Z"
     },
     "N407CH": {
       "registration": "N407CH",
@@ -731,7 +731,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:00Z"
+      "last_updated": "2026-03-10T14:41:07Z"
     },
     "N407CN": {
       "registration": "N407CN",
@@ -746,7 +746,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:00Z"
+      "last_updated": "2026-03-10T14:41:08Z"
     },
     "N407CP": {
       "registration": "N407CP",
@@ -761,7 +761,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:01Z"
+      "last_updated": "2026-03-10T14:41:09Z"
     },
     "N407CZ": {
       "registration": "N407CZ",
@@ -776,7 +776,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:02Z"
+      "last_updated": "2026-03-10T14:41:09Z"
     },
     "N407FC": {
       "registration": "N407FC",
@@ -791,22 +791,22 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:02Z"
+      "last_updated": "2026-03-10T14:41:10Z"
     },
     "N407FM": {
       "registration": "N407FM",
-      "lat": 33.885498,
-      "lon": -112.279545,
-      "alt_baro_ft": 3425,
-      "ground_speed_kts": 119.5,
-      "track_deg": 321.12,
-      "squawk": "1200",
-      "flight": "N407FM",
-      "airborne": true,
-      "seen_secs_ago": 0.4,
-      "rssi": -28.3,
-      "emergency": "none",
-      "last_updated": "2026-03-09T14:42:03Z"
+      "lat": null,
+      "lon": null,
+      "alt_baro_ft": null,
+      "ground_speed_kts": null,
+      "track_deg": null,
+      "squawk": null,
+      "flight": null,
+      "airborne": false,
+      "seen_secs_ago": null,
+      "rssi": null,
+      "emergency": null,
+      "last_updated": "2026-03-10T14:41:11Z"
     },
     "N407JM": {
       "registration": "N407JM",
@@ -821,7 +821,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:03Z"
+      "last_updated": "2026-03-10T14:41:11Z"
     },
     "N407LF": {
       "registration": "N407LF",
@@ -836,7 +836,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:04Z"
+      "last_updated": "2026-03-10T14:41:12Z"
     },
     "N407LP": {
       "registration": "N407LP",
@@ -851,7 +851,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:05Z"
+      "last_updated": "2026-03-10T14:41:13Z"
     },
     "N407MZ": {
       "registration": "N407MZ",
@@ -866,7 +866,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:06Z"
+      "last_updated": "2026-03-10T14:41:14Z"
     },
     "N407NW": {
       "registration": "N407NW",
@@ -881,7 +881,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:06Z"
+      "last_updated": "2026-03-10T14:41:15Z"
     },
     "N407PW": {
       "registration": "N407PW",
@@ -896,7 +896,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:07Z"
+      "last_updated": "2026-03-10T14:41:15Z"
     },
     "N407RU": {
       "registration": "N407RU",
@@ -911,7 +911,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:07Z"
+      "last_updated": "2026-03-10T14:41:16Z"
     },
     "N407SL": {
       "registration": "N407SL",
@@ -926,7 +926,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:08Z"
+      "last_updated": "2026-03-10T14:41:17Z"
     },
     "N407TH": {
       "registration": "N407TH",
@@ -941,22 +941,22 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:09Z"
+      "last_updated": "2026-03-10T14:41:17Z"
     },
     "N407TK": {
       "registration": "N407TK",
-      "lat": 42.829874,
-      "lon": -108.246395,
-      "alt_baro_ft": 8700,
-      "ground_speed_kts": 153.0,
-      "track_deg": 88.88,
+      "lat": null,
+      "lon": null,
+      "alt_baro_ft": null,
+      "ground_speed_kts": null,
+      "track_deg": null,
       "squawk": null,
-      "flight": "N407TK",
-      "airborne": true,
-      "seen_secs_ago": 43.2,
-      "rssi": -27.0,
+      "flight": null,
+      "airborne": false,
+      "seen_secs_ago": null,
+      "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:09Z"
+      "last_updated": "2026-03-10T14:41:18Z"
     },
     "N407ZM": {
       "registration": "N407ZM",
@@ -971,7 +971,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:10Z"
+      "last_updated": "2026-03-10T14:41:19Z"
     },
     "N466GH": {
       "registration": "N466GH",
@@ -986,7 +986,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:11Z"
+      "last_updated": "2026-03-10T14:41:20Z"
     },
     "N469JX": {
       "registration": "N469JX",
@@ -1001,7 +1001,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:11Z"
+      "last_updated": "2026-03-10T14:41:21Z"
     },
     "N7160V": {
       "registration": "N7160V",
@@ -1016,7 +1016,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:12Z"
+      "last_updated": "2026-03-10T14:41:21Z"
     },
     "N862YB": {
       "registration": "N862YB",
@@ -1031,7 +1031,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:12Z"
+      "last_updated": "2026-03-10T14:41:22Z"
     },
     "Registration Number": {
       "registration": "Registration Number",
@@ -1046,7 +1046,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-09T14:42:13Z"
+      "last_updated": "2026-03-10T14:41:22Z"
     }
   }
 }
