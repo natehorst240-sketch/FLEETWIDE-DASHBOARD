@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-15T14:21:45Z",
+  "generated_at_utc": "2026-03-16T14:54:21Z",
   "fleet": "AW109SP",
   "fleet_id": "aw109sp",
   "fleet_type": "phase",
@@ -1003,7 +1003,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:23Z"
+      "last_updated": "2026-03-16T14:53:56Z"
     },
     "N261HC": {
       "registration": "N261HC",
@@ -1018,7 +1018,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:24Z"
+      "last_updated": "2026-03-16T14:53:56Z"
     },
     "N271HC": {
       "registration": "N271HC",
@@ -1033,7 +1033,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:24Z"
+      "last_updated": "2026-03-16T14:53:57Z"
     },
     "N281HC": {
       "registration": "N281HC",
@@ -1048,7 +1048,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:25Z"
+      "last_updated": "2026-03-16T14:53:58Z"
     },
     "N291HC": {
       "registration": "N291HC",
@@ -1063,7 +1063,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:26Z"
+      "last_updated": "2026-03-16T14:53:59Z"
     },
     "N431HC": {
       "registration": "N431HC",
@@ -1078,7 +1078,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:26Z"
+      "last_updated": "2026-03-16T14:54:00Z"
     },
     "N531HC": {
       "registration": "N531HC",
@@ -1093,7 +1093,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:27Z"
+      "last_updated": "2026-03-16T14:54:00Z"
     },
     "N631HC": {
       "registration": "N631HC",
@@ -1108,7 +1108,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:27Z"
+      "last_updated": "2026-03-16T14:54:01Z"
     },
     "N731HC": {
       "registration": "N731HC",
@@ -1123,7 +1123,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:28Z"
+      "last_updated": "2026-03-16T14:54:02Z"
     },
     "Registration Number": {
       "registration": "Registration Number",
@@ -1138,7 +1138,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-15T14:21:28Z"
+      "last_updated": "2026-03-16T14:54:02Z"
     }
   }
 }
