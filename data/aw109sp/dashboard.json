@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-28T14:23:52Z",
+  "generated_at_utc": "2026-03-29T14:26:01Z",
   "fleet": "AW109SP",
   "fleet_id": "aw109sp",
   "fleet_type": "phase",
@@ -998,12 +998,12 @@
       "ground_speed_kts": null,
       "track_deg": null,
       "squawk": null,
-      "flight": null,
+      "flight": "N251HC",
       "airborne": false,
-      "seen_secs_ago": null,
-      "rssi": null,
+      "seen_secs_ago": 1.5,
+      "rssi": -23.8,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:14Z"
+      "last_updated": "2026-03-29T14:25:34Z"
     },
     "N261HC": {
       "registration": "N261HC",
@@ -1018,7 +1018,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:14Z"
+      "last_updated": "2026-03-29T14:25:36Z"
     },
     "N271HC": {
       "registration": "N271HC",
@@ -1033,7 +1033,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:15Z"
+      "last_updated": "2026-03-29T14:25:37Z"
     },
     "N281HC": {
       "registration": "N281HC",
@@ -1048,7 +1048,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:16Z"
+      "last_updated": "2026-03-29T14:25:38Z"
     },
     "N291HC": {
       "registration": "N291HC",
@@ -1063,7 +1063,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:17Z"
+      "last_updated": "2026-03-29T14:25:38Z"
     },
     "N431HC": {
       "registration": "N431HC",
@@ -1078,22 +1078,22 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:18Z"
+      "last_updated": "2026-03-29T14:25:39Z"
     },
     "N531HC": {
       "registration": "N531HC",
-      "lat": 40.486807,
-      "lon": -111.893442,
-      "alt_baro_ft": 5700,
-      "ground_speed_kts": 137.2,
-      "track_deg": 7.54,
-      "squawk": "0150",
-      "flight": "N531HC",
-      "airborne": true,
-      "seen_secs_ago": 0.1,
-      "rssi": -4.0,
-      "emergency": "none",
-      "last_updated": "2026-03-28T14:23:19Z"
+      "lat": null,
+      "lon": null,
+      "alt_baro_ft": null,
+      "ground_speed_kts": null,
+      "track_deg": null,
+      "squawk": null,
+      "flight": null,
+      "airborne": false,
+      "seen_secs_ago": null,
+      "rssi": null,
+      "emergency": null,
+      "last_updated": "2026-03-29T14:25:40Z"
     },
     "N631HC": {
       "registration": "N631HC",
@@ -1108,7 +1108,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:20Z"
+      "last_updated": "2026-03-29T14:25:41Z"
     },
     "N731HC": {
       "registration": "N731HC",
@@ -1123,7 +1123,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:20Z"
+      "last_updated": "2026-03-29T14:25:41Z"
     },
     "Registration Number": {
       "registration": "Registration Number",
@@ -1138,7 +1138,7 @@
       "seen_secs_ago": null,
       "rssi": null,
       "emergency": null,
-      "last_updated": "2026-03-28T14:23:21Z"
+      "last_updated": "2026-03-29T14:25:42Z"
     }
   }
 }
